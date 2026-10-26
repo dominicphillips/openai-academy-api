@@ -29,7 +29,7 @@ function resolve(pathname: string): Route {
 }
 
 const TITLES: Record<PageKey, () => string> = {
-  home: () => copy.home.title,
+  home: () => copy.home.catalogHeading,
   overview: () => copy.overview.title,
   resources: () => copy.resources.title,
   resourceDetail: () => copy.resource.title,

@@ -234,8 +234,6 @@
     "previewTruncated": "Showing the first {shown} of {total} lines. Copy still copies the full response."
   },
   "home": {
-    "title": "Browse public OpenAI Academy learning resources",
-    "lede": "Pick a category or search titles, summaries, and tags, then open a resource on academy.openai.com. The cards load from this independent, read-only API, which serves a snapshot of public Academy metadata.",
     "authorNote": "I built this to share with portfolio companies and internal teams, so they can build learning resources for their own teams. Browse it here, or use the API to pull the catalog into your own tools, with links back to the official pages.",
     "authorByline": "Dominic Phillips",
     "catalogHeading": "Search the catalog",

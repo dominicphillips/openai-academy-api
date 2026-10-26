@@ -2,7 +2,7 @@
 // classic blocking script, so it runs under the page CSP (script-src 'self') without an inline
 // script, and it must stay in sync with src/lib/theme.ts (storage key, class and attribute names).
 ;(function () {
-  var theme = 'dark'
+  var theme = 'light'
   try {
     var saved = window.localStorage.getItem('academy-theme')
     if (saved === 'light' || saved === 'dark') theme = saved

@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-// Browser theme preference: dark on a first visit, persisted locally once the visitor chooses.
+// Browser theme preference: light on a first visit or without a valid saved choice, persisted locally once the visitor chooses.
 // public/theme-init.js applies the same storage key and root attributes before the first paint.
 
 export type Theme = 'light' | 'dark'
@@ -25,7 +25,7 @@ function apply(theme: Theme) {
   root.dataset.theme = theme
 }
 
-let current: Theme = readStored() ?? 'dark'
+let current: Theme = readStored() ?? 'light'
 apply(current)
 
 function notify() {
@@ -35,7 +35,7 @@ function notify() {
 // Another tab changed the preference: follow it so the choice stays consistent per browser.
 window.addEventListener('storage', (event) => {
   if (event.key !== THEME_STORAGE_KEY && event.key !== null) return
-  const stored = readStored() ?? 'dark'
+  const stored = readStored() ?? 'light'
   if (stored === current) return
   current = stored
   apply(current)
