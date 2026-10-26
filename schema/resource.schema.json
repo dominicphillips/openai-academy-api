@@ -1,0 +1,426 @@
+{
+  "$defs": {
+    "Detail": {
+      "additionalProperties": false,
+      "properties": {
+        "audience": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Audience"
+        },
+        "prerequisites": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Prerequisites",
+          "type": "array"
+        },
+        "objectives": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Objectives",
+          "type": "array"
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/Section"
+          },
+          "maxItems": 50,
+          "title": "Sections",
+          "type": "array"
+        }
+      },
+      "title": "Detail",
+      "type": "object"
+    },
+    "Duration": {
+      "additionalProperties": false,
+      "properties": {
+        "courseMinutes": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Courseminutes"
+        },
+        "pathMinutes": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pathminutes"
+        },
+        "videoSeconds": {
+          "anyOf": [
+            {
+              "maximum": 604800,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Videoseconds"
+        }
+      },
+      "title": "Duration",
+      "type": "object"
+    },
+    "MediaReference": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "video",
+            "audio",
+            "image",
+            "document"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "permission": {
+          "const": "permitted",
+          "title": "Permission",
+          "type": "string"
+        },
+        "permissionEvidenceUrl": {
+          "title": "Permissionevidenceurl",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "kind",
+        "url",
+        "permission",
+        "permissionEvidenceUrl"
+      ],
+      "title": "MediaReference",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "sourceUrls": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Sourceurls",
+          "type": "array"
+        },
+        "fetchedAt": {
+          "format": "date-time",
+          "title": "Fetchedat",
+          "type": "string"
+        },
+        "contentHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Contenthash",
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "managed-agent",
+            "manual",
+            "fixture"
+          ],
+          "title": "Method",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sourceUrls",
+        "fetchedAt",
+        "contentHash",
+        "method"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Section": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "minLength": 1,
+              "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context"
+        },
+        "units": {
+          "items": {
+            "$ref": "#/$defs/Unit"
+          },
+          "maxItems": 200,
+          "title": "Units",
+          "type": "array"
+        }
+      },
+      "title": "Section",
+      "type": "object"
+    },
+    "Unit": {
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "lesson",
+            "quiz",
+            "course"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "context": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Context"
+        },
+        "videoCount": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Videocount"
+        }
+      },
+      "required": [
+        "title",
+        "url",
+        "kind"
+      ],
+      "title": "Unit",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "maxLength": 300,
+      "minLength": 1,
+      "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+      "title": "Title",
+      "type": "string"
+    },
+    "url": {
+      "title": "Url",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "course",
+        "learning-path",
+        "article",
+        "video",
+        "event",
+        "collection",
+        "external"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "categoryIds": {
+      "items": {
+        "maxLength": 100,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Categoryids",
+      "type": "array"
+    },
+    "audiences": {
+      "items": {
+        "enum": [
+          "general",
+          "knowledge-workers",
+          "developers",
+          "leaders",
+          "educators",
+          "students",
+          "admins",
+          "other"
+        ],
+        "type": "string"
+      },
+      "maxItems": 8,
+      "title": "Audiences",
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "maxLength": 300,
+        "minLength": 1,
+        "pattern": "^[^\\x00-\\x1f\\x7f-\\x9f\\u202a-\\u202e\\u2066-\\u2069]+$",
+        "type": "string"
+      },
+      "maxItems": 50,
+      "title": "Tags",
+      "type": "array"
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "maxLength": 1200,
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Summary"
+    },
+    "level": {
+      "anyOf": [
+        {
+          "enum": [
+            "beginner",
+            "intermediate",
+            "advanced"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Level"
+    },
+    "duration": {
+      "$ref": "#/$defs/Duration"
+    },
+    "detail": {
+      "$ref": "#/$defs/Detail"
+    },
+    "media": {
+      "items": {
+        "$ref": "#/$defs/MediaReference"
+      },
+      "maxItems": 20,
+      "title": "Media",
+      "type": "array"
+    },
+    "id": {
+      "pattern": "^oa_[a-f0-9]{24}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    }
+  },
+  "required": [
+    "title",
+    "url",
+    "kind",
+    "id",
+    "provenance"
+  ],
+  "title": "Resource",
+  "type": "object"
+}

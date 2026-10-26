@@ -1,0 +1,108 @@
+{
+  "fixtureOnly": "The example resource is synthetic. Import it with method fixture into temporary storage only. No source fetch or model call is made.",
+  "commands": {
+    "serve": [
+      "uv",
+      "run",
+      "academy-api",
+      "--snapshot",
+      "data/snapshot.json",
+      "--frontend-dir",
+      "frontend/dist",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "8000"
+    ],
+    "validateFixture": [
+      "uv",
+      "run",
+      "academy-collector",
+      "validate",
+      "examples/collection.fixture.json"
+    ],
+    "importFixture": [
+      "uv",
+      "run",
+      "academy-collector",
+      "--snapshot",
+      "/tmp/academy-example/snapshot.json",
+      "import",
+      "examples/collection.fixture.json",
+      "--method",
+      "fixture"
+    ],
+    "dryRun": [
+      "uv",
+      "run",
+      "academy-collector",
+      "dry-run",
+      "--seed",
+      "https://academy.openai.com/pages/courses",
+      "--max-pages",
+      "30",
+      "--max-resources",
+      "100",
+      "--max-seconds",
+      "900"
+    ],
+    "livePass": [
+      "uv",
+      "run",
+      "academy-collector",
+      "run",
+      "--live",
+      "--seeds-file",
+      "next-batch.json",
+      "--max-pages",
+      "80",
+      "--max-seconds",
+      "600"
+    ],
+    "remaining": [
+      "uv",
+      "run",
+      "academy-collector",
+      "remaining",
+      "RUN_UUID"
+    ],
+    "resume": [
+      "uv",
+      "run",
+      "academy-collector",
+      "resume",
+      "RUN_UUID",
+      "--live"
+    ],
+    "adoptOriginalSession": [
+      "uv",
+      "run",
+      "academy-collector",
+      "resume",
+      "RUN_UUID",
+      "--session-id",
+      "ORIGINAL_SESSION_ID",
+      "--live"
+    ],
+    "retryCleanup": [
+      "uv",
+      "run",
+      "academy-collector",
+      "cleanup",
+      "RUN_UUID",
+      "--live"
+    ]
+  },
+  "seedFile": "JSON array of public Academy URLs or one URL per line. Repeat --seed to add URLs. Custom seeds replace the default seed set; normalized duplicates are removed.",
+  "batching": "Each live pass has its own run/session and limits. Save successful source receipts, compute the next unvisited batch from official discovery, then explicitly start the next pass. Imports merge without deleting prior records. No scheduler is included.",
+  "stateFiles": [
+    "STATE_DIR/RUN_UUID/journal.json",
+    "STATE_DIR/RUN_UUID/artifact.json",
+    "STATE_DIR/RUN_UUID/receipts.json",
+    "SNAPSHOT_PATH",
+    "SNAPSHOT_PATH with .previous.json suffix",
+    "SNAPSHOT_PATH with .status.json suffix"
+  ],
+  "cleanup": "Successful publication and cleanup are separate journal states. Deferred cleanup is retryable without new inference. Cleanup inspects session/turn status before deletion and refuses an active recovery session.",
+  "limits": "Hosted network allowlist is enforced by the provider. Source request/byte/robots limits are enforced by the supplied fetch helper and checked receipts; the agent is instructed to use that helper. Provider networking itself does not impose a hard request-count quota. The controller cancels at its deadline and records unconfirmed cancellation truthfully."
+}

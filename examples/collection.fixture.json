@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2020-01-01T00:00:00Z",
+  "categories": [
+    {
+      "id": "fixture",
+      "label": "Fixture category"
+    }
+  ],
+  "resources": [
+    {
+      "title": "Fixture resource",
+      "url": "https://academy.openai.com/public/resources/fixture-only-example",
+      "kind": "article",
+      "categoryIds": [
+        "fixture"
+      ],
+      "audiences": [
+        "general"
+      ],
+      "tags": [],
+      "summary": null,
+      "level": null,
+      "duration": {
+        "courseMinutes": null,
+        "pathMinutes": null,
+        "videoSeconds": null
+      },
+      "detail": {
+        "audience": null,
+        "prerequisites": [],
+        "objectives": [],
+        "sections": []
+      },
+      "media": [],
+      "provenance": {
+        "sourceUrls": [
+          "https://academy.openai.com/public/resources/fixture-only-example"
+        ],
+        "fetchedAt": "2020-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "coverage": [
+    {
+      "categoryId": "fixture",
+      "state": "partial",
+      "discovered": null,
+      "collected": 1
+    }
+  ],
+  "fetchReport": {
+    "requests": 0,
+    "robotsChecked": true,
+    "completedWithinLimits": true
+  }
+}

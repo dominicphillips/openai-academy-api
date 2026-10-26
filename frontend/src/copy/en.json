@@ -1,0 +1,223 @@
+{
+  "app": {
+    "name": "OpenAI Academy API",
+    "documentTitle": "OpenAI Academy API Docs"
+  },
+  "nav": {
+    "sectionsLabel": "API documentation",
+    "externalLabel": "External links",
+    "skipToContent": "Skip to content",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "overview": "Overview",
+    "resources": "Resources",
+    "resourceDetail": "Resource detail",
+    "categories": "Categories",
+    "status": "Status",
+    "github": "GitHub",
+    "openapi": "OpenAPI spec",
+    "health": "Health check"
+  },
+  "footer": {
+    "independence": "Independent open-source DeployedWork project. Not an official OpenAI service or an access or provisioning service.",
+    "madeBy": "Built by"
+  },
+  "actions": {
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Copy failed",
+    "run": "Run request",
+    "running": "Running…",
+    "runAgain": "Run again",
+    "retry": "Retry",
+    "nextPage": "Next page",
+    "openOfficial": "Open resource",
+    "backHome": "Back to overview"
+  },
+  "labels": {
+    "baseUrl": "Base URL",
+    "curl": "curl",
+    "shape": "Response shape",
+    "response": "Response body",
+    "requestUrl": "Request URL"
+  },
+  "request": {
+    "idle": "Run the request to inspect the live response from the current snapshot.",
+    "loading": "Requesting live response…",
+    "failed": "The request did not complete. Check your connection and retry.",
+    "statusLine": "HTTP {status} in {ms} ms",
+    "emptyBody": "(Empty response body)"
+  },
+  "errors": {
+    "badRequest": "The cursor is invalid or does not match the active filters. Run the query again from the first page.",
+    "notFound": "No resource matched this ID in the current snapshot. Check the ID or list resources to copy a valid oa_ ID.",
+    "obsoleteSnapshot": "The snapshot changed while paging. Run the query again without a cursor to read from the current snapshot.",
+    "noSnapshot": "No validated snapshot is currently available to serve requests. Check /v1/status and retry later.",
+    "unexpected": "The request returned an error. If status is 422, check your query parameters against the documented limits in the response body; otherwise retry."
+  },
+  "units": {
+    "minutes": "{minutes} min",
+    "seconds": "{seconds} sec",
+    "minutesSeconds": "{minutes} min {seconds} sec"
+  },
+  "overview": {
+    "title": "Query public OpenAI Academy learning resources",
+    "lede": "Read-only JSON endpoints for searching and inspecting indexed public OpenAI Academy courses, learning paths, videos, and articles without an API key.",
+    "baseUrlHeading": "Base URL and authentication",
+    "baseUrlLede": "All endpoints are public read-only GET routes under this origin and require no API key or bearer token.",
+    "quickStartHeading": "Fetch your first page of resources",
+    "quickStartLede": "Run this curl command in your terminal to retrieve up to five indexed learning resources.",
+    "endpointsHeading": "Available GET endpoints",
+    "endpointsLede": "Select a catalog route to view its parameters and response schema, or open the operational routes directly.",
+    "endpointColumnPath": "Route",
+    "endpointColumnDescription": "Description",
+    "tryHeading": "Send a live GET request",
+    "tryLede": "Choose an endpoint to query the current local snapshot directly from your browser.",
+    "endpointLabel": "Endpoint",
+    "conventionsHeading": "Snapshot, schema, and scope rules",
+    "conventions": {
+      "readOnly": "Snapshot-backed reads: Every request reads a validated local snapshot and never triggers a live crawl, source fetch, or model call.",
+      "cursors": "Snapshot-scoped pagination: Results are ordered by ascending stable oa_ ID; cursors bind to your active filters and snapshotId, returning 400 on filter mismatch or 409 if the snapshot changed.",
+      "nulls": "Explicit empty values: Responses use camelCase and keep all documented fields present, returning null or [] when a fact is unverified or absent on the source page.",
+      "durations": "Distinct duration units: duration.courseMinutes, duration.pathMinutes, and duration.videoSeconds measure different scopes and are never summed or converted into one another.",
+      "sources": "Canonical source links: Each resource ID (oa_ plus 24 hex characters) hashes its canonical public Academy URL, and url plus provenance.sourceUrls link directly to the original pages.",
+      "notExposed": "Catalog metadata only: The API does not provide user enrollment, learner progress, gated course packages, or media redistribution rights (media is [] unless explicit reuse permission is recorded)."
+    },
+    "linksHeading": "Machine-readable specs and source code",
+    "linksLede": "Inspect the OpenAPI 3.1 schema, check server health, or view the repository."
+  },
+  "endpoints": {
+    "listResources": "Filter and paginate indexed learning resources by keyword, category, kind, or audience.",
+    "getResource": "Fetch full metadata, curriculum sections, durations, and provenance for one resource ID.",
+    "categories": "List indexed categories with their slugs, display labels, and current resource counts.",
+    "status": "Check snapshot freshness state, refresh timestamps, total count, and per-category coverage.",
+    "health": "Liveness check returning HTTP 200 and status ok when the server process is up.",
+    "openapi": "OpenAPI 3.1 specification for all public routes and response schemas."
+  },
+  "resources": {
+    "title": "List and filter learning resources",
+    "lede": "Search the current snapshot by keyword, category, kind, or target audience with deterministic cursor pagination.",
+    "paramsHeading": "Query parameters",
+    "params": {
+      "q": "Case-insensitive text search across resource titles, summaries, and tags (up to 200 characters).",
+      "category": "Category slug from GET /v1/categories (lowercase alphanumeric characters and hyphens, up to 100 characters).",
+      "kind": "Resource format filter: course, learning-path, article, video, event, collection, or external.",
+      "audience": "Target audience filter: general, knowledge-workers, developers, leaders, educators, students, admins, or other.",
+      "cursor": "Opaque pagination token from nextCursor; must be sent with the same filters against the same snapshotId.",
+      "limit": "Maximum number of resources to return per page (1 to {max}, default {default})."
+    },
+    "responseHeading": "Response fields and pagination",
+    "shapeNote": "Items are sorted by ascending resource ID so pages stay deterministic within a snapshot.",
+    "response": {
+      "items": "Page of matching Resource objects ordered by ascending stable ID.",
+      "nextCursor": "Opaque cursor for the next page of results, or null when no further items match.",
+      "total": "Total number of resources in the snapshot matching the active filters.",
+      "snapshotId": "SHA-256 identifier of the snapshot serving this page."
+    },
+    "tryHeading": "Test GET /v1/resources",
+    "tryLede": "Set optional filters and run a request. Changing any filter resets pagination to the first page.",
+    "filters": {
+      "q": "Search query (q)",
+      "category": "Category",
+      "categoryAny": "All categories",
+      "categoryUnavailable": "Category list could not be loaded from /v1/categories. You can still run other filters.",
+      "kind": "Kind",
+      "audience": "Audience",
+      "limit": "Limit"
+    },
+    "resultsHeading": "Matching resources",
+    "resultsSummary": "Showing {count} of {total} matching resources",
+    "resultsCount": "Showing {count} matching resources",
+    "snapshotLabel": "Snapshot",
+    "empty": "No resources in the current snapshot matched these filters. Clear or broaden a filter and run the request again."
+  },
+  "resource": {
+    "title": "Fetch a single resource by ID",
+    "lede": "Fetch full metadata, structured curriculum sections, distinct durations, and provenance for a single resource ID.",
+    "fieldsHeading": "Resource object fields",
+    "shapeNote": "Every documented field is present in the JSON payload; unknown or unverified values are null or empty arrays.",
+    "fields": {
+      "id": "Stable identifier: oa_ followed by the first 24 lowercase hex characters of the canonical URL's SHA-256 hash.",
+      "title": "Official resource title from the public source page.",
+      "url": "Canonical public destination URL on academy.openai.com.",
+      "kind": "Resource format: course, learning-path, article, video, event, collection, or external.",
+      "categoryIds": "Category slugs from /v1/categories that include this resource.",
+      "audiences": "Normalized audience tags such as developers, knowledge-workers, leaders, or general.",
+      "tags": "Topic and skill tags recorded from the source page.",
+      "summary": "Short description of the resource, or null when not stated on the source.",
+      "level": "Difficulty level (beginner, intermediate, or advanced), or null when unspecified.",
+      "duration": "Object with separate courseMinutes, pathMinutes, and videoSeconds fields; values are never combined.",
+      "detail": "Structured learning notes containing free-text audience, prerequisites, objectives, and ordered curriculum sections.",
+      "media": "Permitted external media references with evidence URLs; empty unless reuse permission is documented.",
+      "provenance": "Source URLs, UTC fetch timestamp, normalized metadata SHA-256 hash, and collection method (managed-agent, manual, or fixture)."
+    },
+    "tryHeading": "Inspect a resource by ID",
+    "idLabel": "Resource ID",
+    "idHint": "Enter an oa_ resource ID, or select a resource from the Resources page to populate this request.",
+    "viewHeading": "Parsed resource summary",
+    "view": {
+      "officialUrl": "Public resource URL",
+      "id": "Resource ID",
+      "kind": "Kind",
+      "level": "Level",
+      "categories": "Categories",
+      "duration": "Duration",
+      "courseMinutes": "Course duration",
+      "pathMinutes": "Learning path duration",
+      "videoSeconds": "Video duration",
+      "tags": "Tags",
+      "unknown": "Not recorded",
+      "detailAudience": "Intended audience",
+      "prerequisites": "Prerequisites",
+      "objectives": "Learning objectives",
+      "sections": "Sections",
+      "provenance": "Provenance",
+      "fetchedAt": "Fetched (UTC)",
+      "method": "Collection method",
+      "contentHash": "Content hash",
+      "sourceUrls": "Source URLs"
+    }
+  },
+  "categories": {
+    "title": "List indexed resource categories",
+    "lede": "Retrieve the category slugs, display labels, and resource counts present in the current snapshot.",
+    "responseHeading": "Response fields",
+    "shapeNote": "Pass any category id as the category query parameter on GET /v1/resources to filter resources in that category.",
+    "response": {
+      "items": "List of categories present in the active snapshot.",
+      "id": "Lowercase slug used as the category query parameter on /v1/resources.",
+      "label": "Human-readable category name from the public Academy directory.",
+      "count": "Number of indexed resources assigned to this category in the current snapshot.",
+      "snapshotId": "SHA-256 identifier of the snapshot serving these counts."
+    },
+    "tryHeading": "Test GET /v1/categories",
+    "resultsHeading": "Categories in current snapshot",
+    "columns": {
+      "label": "Category",
+      "id": "Slug (id)",
+      "count": "Indexed resources"
+    },
+    "empty": "No categories are recorded in the current snapshot."
+  },
+  "status": {
+    "title": "Snapshot freshness and coverage status",
+    "lede": "Check whether the active snapshot is fresh, stale, or unavailable, along with refresh timestamps and per-category collection coverage.",
+    "fieldsHeading": "Status and coverage fields",
+    "fields": {
+      "freshness": "Snapshot state: fresh, stale, or unavailable. Reports stale when the snapshot is older than 7 days, coverage is incomplete, the latest refresh failed, or the server fell back to a prior snapshot after a read error.",
+      "resourceCount": "Total number of validated resources in the active snapshot (does not imply all public OpenAI Academy content is indexed).",
+      "coverage": "Per-category records reporting categoryId, state (complete, partial, or not-collected), discovered count, and collected count."
+    },
+    "note": "The response also reports snapshotId (active SHA-256 hash or null) and UTC timestamps for generatedAt, lastAttemptAt, and lastSuccessAt; failed refreshes keep serving the last validated snapshot.",
+    "tryHeading": "Test GET /v1/status",
+    "resultsHeading": "Top-level status fields",
+    "columns": {
+      "field": "Field",
+      "value": "Value"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "lede": "No documentation page matches this URL path."
+  }
+}

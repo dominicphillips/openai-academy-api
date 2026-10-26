@@ -1,0 +1,620 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Academy Resource API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/status": {
+      "get": {
+        "summary": "Status",
+        "operationId": "status_v1_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/categories": {
+      "get": {
+        "summary": "Categories",
+        "operationId": "categories_v1_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryPage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/resources": {
+      "get": {
+        "summary": "Resources",
+        "operationId": "resources_v1_resources_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100,
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "course",
+                    "learning-path",
+                    "article",
+                    "video",
+                    "event",
+                    "collection",
+                    "external"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "audience",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "general",
+                    "knowledge-workers",
+                    "developers",
+                    "leaders",
+                    "educators",
+                    "students",
+                    "admins",
+                    "other"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Audience"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourcePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/resources/{resource_id}": {
+      "get": {
+        "summary": "Resource",
+        "operationId": "resource_v1_resources__resource_id__get",
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Resource Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CategoryCount": {
+        "properties": {
+          "id": {
+            "title": "Id"
+          },
+          "label": {
+            "title": "Label"
+          },
+          "count": {
+            "title": "Count"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "count"
+        ],
+        "title": "CategoryCount"
+      },
+      "CategoryPage": {
+        "properties": {
+          "items": {
+            "title": "Items"
+          },
+          "snapshotId": {
+            "title": "Snapshotid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "snapshotId"
+        ],
+        "title": "CategoryPage"
+      },
+      "Coverage": {
+        "properties": {
+          "categoryId": {
+            "title": "Categoryid"
+          },
+          "state": {
+            "title": "State"
+          },
+          "discovered": {
+            "title": "Discovered"
+          },
+          "collected": {
+            "title": "Collected"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "categoryId",
+          "state",
+          "collected"
+        ],
+        "title": "Coverage"
+      },
+      "Detail": {
+        "properties": {
+          "audience": {
+            "title": "Audience"
+          },
+          "prerequisites": {
+            "title": "Prerequisites"
+          },
+          "objectives": {
+            "title": "Objectives"
+          },
+          "sections": {
+            "title": "Sections"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Detail"
+      },
+      "Duration": {
+        "properties": {
+          "courseMinutes": {
+            "title": "Courseminutes"
+          },
+          "pathMinutes": {
+            "title": "Pathminutes"
+          },
+          "videoSeconds": {
+            "title": "Videoseconds"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Duration"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MediaReference": {
+        "properties": {
+          "kind": {
+            "title": "Kind"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "permission": {
+            "title": "Permission"
+          },
+          "permissionEvidenceUrl": {
+            "title": "Permissionevidenceurl"
+          },
+          "title": {
+            "title": "Title"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "url",
+          "permission",
+          "permissionEvidenceUrl"
+        ],
+        "title": "MediaReference"
+      },
+      "Provenance": {
+        "properties": {
+          "sourceUrls": {
+            "title": "Sourceurls"
+          },
+          "fetchedAt": {
+            "title": "Fetchedat"
+          },
+          "contentHash": {
+            "title": "Contenthash"
+          },
+          "method": {
+            "title": "Method"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "sourceUrls",
+          "fetchedAt",
+          "contentHash",
+          "method"
+        ],
+        "title": "Provenance"
+      },
+      "Resource": {
+        "properties": {
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "categoryIds": {
+            "title": "Categoryids"
+          },
+          "audiences": {
+            "title": "Audiences"
+          },
+          "tags": {
+            "title": "Tags"
+          },
+          "summary": {
+            "title": "Summary"
+          },
+          "level": {
+            "title": "Level"
+          },
+          "duration": {},
+          "detail": {},
+          "media": {
+            "title": "Media"
+          },
+          "id": {
+            "title": "Id"
+          },
+          "provenance": {}
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "kind",
+          "id",
+          "provenance"
+        ],
+        "title": "Resource"
+      },
+      "ResourcePage": {
+        "properties": {
+          "items": {
+            "title": "Items"
+          },
+          "nextCursor": {
+            "title": "Nextcursor"
+          },
+          "total": {
+            "title": "Total"
+          },
+          "snapshotId": {
+            "title": "Snapshotid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "items",
+          "nextCursor",
+          "total",
+          "snapshotId"
+        ],
+        "title": "ResourcePage"
+      },
+      "Section": {
+        "properties": {
+          "title": {
+            "title": "Title"
+          },
+          "context": {
+            "title": "Context"
+          },
+          "units": {
+            "title": "Units"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Section"
+      },
+      "Status": {
+        "properties": {
+          "state": {
+            "title": "State"
+          },
+          "snapshotId": {
+            "title": "Snapshotid"
+          },
+          "generatedAt": {
+            "title": "Generatedat"
+          },
+          "lastAttemptAt": {
+            "title": "Lastattemptat"
+          },
+          "lastSuccessAt": {
+            "title": "Lastsuccessat"
+          },
+          "resourceCount": {
+            "title": "Resourcecount"
+          },
+          "coverage": {
+            "title": "Coverage"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "state",
+          "snapshotId",
+          "generatedAt",
+          "lastAttemptAt",
+          "lastSuccessAt",
+          "resourceCount",
+          "coverage"
+        ],
+        "title": "Status"
+      },
+      "Unit": {
+        "properties": {
+          "title": {
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url"
+          },
+          "kind": {
+            "title": "Kind"
+          },
+          "context": {
+            "title": "Context"
+          },
+          "videoCount": {
+            "title": "Videocount"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "url",
+          "kind"
+        ],
+        "title": "Unit"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

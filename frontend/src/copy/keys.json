@@ -1,0 +1,223 @@
+{
+  "app": {
+    "name": "",
+    "documentTitle": ""
+  },
+  "nav": {
+    "sectionsLabel": "",
+    "externalLabel": "",
+    "skipToContent": "",
+    "menu": "",
+    "closeMenu": "",
+    "overview": "",
+    "resources": "",
+    "resourceDetail": "",
+    "categories": "",
+    "status": "",
+    "github": "",
+    "openapi": "",
+    "health": ""
+  },
+  "footer": {
+    "independence": "",
+    "madeBy": ""
+  },
+  "actions": {
+    "copy": "",
+    "copied": "",
+    "copyFailed": "",
+    "run": "",
+    "running": "",
+    "runAgain": "",
+    "retry": "",
+    "nextPage": "",
+    "openOfficial": "",
+    "backHome": ""
+  },
+  "labels": {
+    "baseUrl": "",
+    "curl": "",
+    "shape": "",
+    "response": "",
+    "requestUrl": ""
+  },
+  "request": {
+    "idle": "",
+    "loading": "",
+    "failed": "",
+    "statusLine": "",
+    "emptyBody": ""
+  },
+  "errors": {
+    "badRequest": "",
+    "notFound": "",
+    "obsoleteSnapshot": "",
+    "noSnapshot": "",
+    "unexpected": ""
+  },
+  "units": {
+    "minutes": "",
+    "seconds": "",
+    "minutesSeconds": ""
+  },
+  "overview": {
+    "title": "",
+    "lede": "",
+    "baseUrlHeading": "",
+    "baseUrlLede": "",
+    "quickStartHeading": "",
+    "quickStartLede": "",
+    "endpointsHeading": "",
+    "endpointsLede": "",
+    "endpointColumnPath": "",
+    "endpointColumnDescription": "",
+    "tryHeading": "",
+    "tryLede": "",
+    "endpointLabel": "",
+    "conventionsHeading": "",
+    "conventions": {
+      "readOnly": "",
+      "cursors": "",
+      "nulls": "",
+      "durations": "",
+      "sources": "",
+      "notExposed": ""
+    },
+    "linksHeading": "",
+    "linksLede": ""
+  },
+  "endpoints": {
+    "listResources": "",
+    "getResource": "",
+    "categories": "",
+    "status": "",
+    "health": "",
+    "openapi": ""
+  },
+  "resources": {
+    "title": "",
+    "lede": "",
+    "paramsHeading": "",
+    "params": {
+      "q": "",
+      "category": "",
+      "kind": "",
+      "audience": "",
+      "cursor": "",
+      "limit": ""
+    },
+    "responseHeading": "",
+    "shapeNote": "",
+    "response": {
+      "items": "",
+      "nextCursor": "",
+      "total": "",
+      "snapshotId": ""
+    },
+    "tryHeading": "",
+    "tryLede": "",
+    "filters": {
+      "q": "",
+      "category": "",
+      "categoryAny": "",
+      "categoryUnavailable": "",
+      "kind": "",
+      "audience": "",
+      "limit": ""
+    },
+    "resultsHeading": "",
+    "resultsSummary": "",
+    "resultsCount": "",
+    "snapshotLabel": "",
+    "empty": ""
+  },
+  "resource": {
+    "title": "",
+    "lede": "",
+    "fieldsHeading": "",
+    "shapeNote": "",
+    "fields": {
+      "id": "",
+      "title": "",
+      "url": "",
+      "kind": "",
+      "categoryIds": "",
+      "audiences": "",
+      "tags": "",
+      "summary": "",
+      "level": "",
+      "duration": "",
+      "detail": "",
+      "media": "",
+      "provenance": ""
+    },
+    "tryHeading": "",
+    "idLabel": "",
+    "idHint": "",
+    "viewHeading": "",
+    "view": {
+      "officialUrl": "",
+      "id": "",
+      "kind": "",
+      "level": "",
+      "categories": "",
+      "duration": "",
+      "courseMinutes": "",
+      "pathMinutes": "",
+      "videoSeconds": "",
+      "tags": "",
+      "unknown": "",
+      "detailAudience": "",
+      "prerequisites": "",
+      "objectives": "",
+      "sections": "",
+      "provenance": "",
+      "fetchedAt": "",
+      "method": "",
+      "contentHash": "",
+      "sourceUrls": ""
+    }
+  },
+  "categories": {
+    "title": "",
+    "lede": "",
+    "responseHeading": "",
+    "shapeNote": "",
+    "response": {
+      "items": "",
+      "id": "",
+      "label": "",
+      "count": "",
+      "snapshotId": ""
+    },
+    "tryHeading": "",
+    "resultsHeading": "",
+    "columns": {
+      "label": "",
+      "id": "",
+      "count": ""
+    },
+    "empty": ""
+  },
+  "status": {
+    "title": "",
+    "lede": "",
+    "fieldsHeading": "",
+    "fields": {
+      "freshness": "",
+      "resourceCount": "",
+      "coverage": ""
+    },
+    "note": "",
+    "tryHeading": "",
+    "resultsHeading": "",
+    "columns": {
+      "field": "",
+      "value": ""
+    }
+  },
+  "notFound": {
+    "title": "",
+    "lede": ""
+  }
+}
