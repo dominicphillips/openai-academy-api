@@ -32,22 +32,6 @@ const primaryBarClass =
   'md:after:absolute md:after:inset-x-2.5 md:after:-bottom-[13px] md:after:h-0.5 md:after:rounded-full md:after:bg-signal md:after:opacity-0 md:aria-[current=page]:after:opacity-100'
 const externalLinkClass = 'rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground'
 
-function Mark() {
-  return (
-    <svg viewBox="0 0 32 32" className="size-5 shrink-0" aria-hidden="true">
-      <rect width="32" height="32" rx="8" className="fill-foreground" />
-      <path
-        d="M9.5 22.5 16 9l6.5 13.5M12.5 17.5h7"
-        fill="none"
-        className="stroke-background"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 function PrimaryLinks({ active, inHeader }: { active: PageKey; inHeader: boolean }) {
   return (
     <ul className={cn('flex', inHeader ? 'items-center gap-1' : 'flex-col gap-0.5')}>
@@ -130,7 +114,6 @@ export function Shell({ active, children }: { active: PageKey; children: ReactNo
       <header className="sticky top-0 z-20 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-13 w-full max-w-[90rem] items-center gap-2 px-4 sm:px-6">
           <Link to="/" className="flex min-w-0 items-center gap-2 text-sm font-semibold tracking-tight">
-            <Mark />
             <span className="truncate">{copy.app.name}</span>
           </Link>
           <nav aria-label={copy.nav.primaryLabel} className="ml-4 hidden md:block">
