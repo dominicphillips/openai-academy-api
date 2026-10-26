@@ -14,6 +14,16 @@ export const LIST_LIMIT_DEFAULT = 20
 export const LIST_LIMIT_MAX = 100
 export const LIMIT_OPTIONS = [10, 20, 50, 100] as const
 
+// Official cover artwork is public source metadata, separate from license-controlled media. Only
+// images under the verified upload path on this host are shown, and only when the artwork's source
+// page is an official Academy page listed in the resource's own provenance.
+export const ARTWORK_ORIGIN = 'https://d2xo500swnpgl1.cloudfront.net'
+export const ARTWORK_PATH_PREFIX = '/uploads/oaiacademy/'
+export const ACADEMY_ORIGIN = 'https://academy.openai.com'
+
+const URL_MAX_LENGTH = 2000
+const ALT_MAX_LENGTH = 500
+
 export interface ResourceDuration {
   courseMinutes: number | null
   pathMinutes: number | null
@@ -34,6 +44,12 @@ export interface Provenance {
   method: string | null
 }
 
+export interface ArtworkReference {
+  url: string
+  alt: string | null
+  sourceUrl: string
+}
+
 export interface Resource {
   id: string
   title: string
@@ -47,6 +63,7 @@ export interface Resource {
   duration: ResourceDuration
   detail: ResourceDetail
   media: unknown
+  artwork: ArtworkReference | null
   provenance: Provenance
 }
 
@@ -159,11 +176,58 @@ export function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }
 
+// Control characters and backslashes; spaces too, except in an already decoded path.
+function hasUnsafeCharacter(value: string, allowSpace = false): boolean {
+  for (let i = 0; i < value.length; i += 1) {
+    const code = value.charCodeAt(i)
+    if (code < 32 || code === 127 || code === 92 || (code === 32 && !allowSpace)) return true
+  }
+  return false
+}
+
+// Repeated decoding exposes encoded traversal, empty segments and smuggled delimiters, as on the server.
+function hasSafePath(rawPath: string): boolean {
+  let decoded = rawPath
+  for (let round = 0; round < 3; round += 1) {
+    try {
+      decoded = decodeURIComponent(decoded)
+    } catch {
+      return false
+    }
+  }
+  if (hasUnsafeCharacter(decoded, true) || decoded.includes('//')) return false
+  return decoded.split('/').every((segment) => segment !== '.' && segment !== '..')
+}
+
+// An HTTPS URL on exactly this origin (default port, no credentials or fragment) under the path prefix.
+function allowedUrl(value: string, origin: string, pathPrefix = '/'): URL | null {
+  if (value.length > URL_MAX_LENGTH || hasUnsafeCharacter(value) || !value.startsWith(`${origin}${pathPrefix}`)) return null
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    return null
+  }
+  if (url.origin !== origin || url.username || url.password || url.hash || !url.pathname.startsWith(pathPrefix)) return null
+  return hasSafePath(value.slice(origin.length).split(/[?#]/, 1)[0]) ? url : null
+}
+
+// Optional and additive: older snapshots omit artwork, and a value failing these checks counts as absent.
+export function toArtwork(value: unknown, sourceUrls: readonly string[]): ArtworkReference | null {
+  if (!isRecord(value) || typeof value.url !== 'string' || typeof value.sourceUrl !== 'string') return null
+  const image = allowedUrl(value.url, ARTWORK_ORIGIN, ARTWORK_PATH_PREFIX)
+  if (!image || image.pathname.length <= ARTWORK_PATH_PREFIX.length) return null
+  if (!sourceUrls.includes(value.sourceUrl) || !allowedUrl(value.sourceUrl, ACADEMY_ORIGIN)) return null
+  const alt = typeof value.alt === 'string' ? value.alt.trim() : ''
+  return { url: image.href, alt: alt && alt.length <= ALT_MAX_LENGTH ? alt : null, sourceUrl: value.sourceUrl }
+}
+
 export function toResource(value: unknown): Resource | null {
   if (!isRecord(value) || typeof value.id !== 'string' || typeof value.title !== 'string') return null
   const duration = isRecord(value.duration) ? value.duration : {}
   const detail = isRecord(value.detail) ? value.detail : {}
   const provenance = isRecord(value.provenance) ? value.provenance : {}
+  const sourceUrls = stringArray(provenance.sourceUrls)
   return {
     id: value.id,
     title: value.title,
@@ -186,8 +250,9 @@ export function toResource(value: unknown): Resource | null {
       sections: Array.isArray(detail.sections) ? detail.sections : [],
     },
     media: value.media ?? null,
+    artwork: toArtwork(value.artwork, sourceUrls),
     provenance: {
-      sourceUrls: stringArray(provenance.sourceUrls),
+      sourceUrls,
       fetchedAt: stringOrNull(provenance.fetchedAt),
       contentHash: stringOrNull(provenance.contentHash),
       method: stringOrNull(provenance.method),

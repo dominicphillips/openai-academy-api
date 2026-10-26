@@ -8,6 +8,7 @@
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans: 'Geist Variable', sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,6 +40,10 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    --color-panel: var(--panel);
+    --color-signal: var(--signal);
+    --color-signal-foreground: var(--signal-foreground);
+    --color-signal-soft: var(--signal-soft);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -48,73 +53,112 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Light: cool paper. Dark: cool graphite (the default). One cyan "signal" colour marks the active
+ * route and the primary action; syntax colours are semantic and tuned per theme for 4.5:1 or better
+ * on the code panel. Artwork tones share the same hue system via --art-* lightness/chroma pairs.
+ */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --background: oklch(0.985 0.003 255);
+    --foreground: oklch(0.21 0.012 255);
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --card-foreground: oklch(0.21 0.012 255);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --popover-foreground: oklch(0.21 0.012 255);
+    --primary: oklch(0.47 0.085 215);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.945 0.006 255);
+    --secondary-foreground: oklch(0.25 0.012 255);
+    --muted: oklch(0.945 0.006 255);
+    --muted-foreground: oklch(0.48 0.014 255);
+    --accent: oklch(0.945 0.006 255);
+    --accent-foreground: oklch(0.21 0.012 255);
+    --destructive: oklch(0.55 0.2 25);
+    --border: oklch(0.89 0.008 255);
+    --input: oklch(0.87 0.008 255);
+    --ring: oklch(0.55 0.1 215);
+    --chart-1: oklch(0.47 0.085 215);
+    --chart-2: oklch(0.48 0.014 255);
+    --chart-3: oklch(0.6 0.012 255);
+    --chart-4: oklch(0.72 0.01 255);
+    --chart-5: oklch(0.84 0.008 255);
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: oklch(0.965 0.005 255);
+    --sidebar-foreground: oklch(0.21 0.012 255);
+    --sidebar-primary: oklch(0.47 0.085 215);
+    --sidebar-primary-foreground: oklch(0.99 0 0);
+    --sidebar-accent: oklch(0.945 0.006 255);
+    --sidebar-accent-foreground: oklch(0.21 0.012 255);
+    --sidebar-border: oklch(0.89 0.008 255);
+    --sidebar-ring: oklch(0.55 0.1 215);
+    --panel: oklch(0.965 0.005 255);
+    --signal: oklch(0.47 0.085 215);
+    --signal-foreground: oklch(0.99 0 0);
+    --signal-soft: oklch(0.47 0.085 215 / 10%);
+    --syntax-key: oklch(0.42 0.08 230);
+    --syntax-string: oklch(0.47 0.11 60);
+    --syntax-number: oklch(0.46 0.12 150);
+    --syntax-literal: oklch(0.49 0.16 300);
+    --syntax-punct: oklch(0.52 0.012 255);
+    --art-field-l: 0.93;
+    --art-field-c: 0.025;
+    --art-glyph-l: 0.87;
+    --art-glyph-c: 0.04;
+    --art-line-l: 0.48;
+    --art-line-c: 0.08;
+    --art-kind-l: 0.4;
+    --art-kind-c: 0.06;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: oklch(0.19 0.012 255);
+    --foreground: oklch(0.95 0.006 255);
+    --card: oklch(0.215 0.012 255);
+    --card-foreground: oklch(0.95 0.006 255);
+    --popover: oklch(0.235 0.012 255);
+    --popover-foreground: oklch(0.95 0.006 255);
+    --primary: oklch(0.82 0.11 205);
+    --primary-foreground: oklch(0.17 0.02 230);
+    --secondary: oklch(0.27 0.012 255);
+    --secondary-foreground: oklch(0.95 0.006 255);
+    --muted: oklch(0.27 0.012 255);
+    --muted-foreground: oklch(0.72 0.014 255);
+    --accent: oklch(0.27 0.012 255);
+    --accent-foreground: oklch(0.95 0.006 255);
+    --destructive: oklch(0.72 0.15 22);
+    --border: oklch(1 0 0 / 9%);
+    --input: oklch(1 0 0 / 13%);
+    --ring: oklch(0.75 0.1 205);
+    --chart-1: oklch(0.82 0.11 205);
+    --chart-2: oklch(0.72 0.014 255);
+    --chart-3: oklch(0.56 0.012 255);
+    --chart-4: oklch(0.44 0.012 255);
+    --chart-5: oklch(0.32 0.012 255);
+    --sidebar: oklch(0.215 0.012 255);
+    --sidebar-foreground: oklch(0.95 0.006 255);
+    --sidebar-primary: oklch(0.82 0.11 205);
+    --sidebar-primary-foreground: oklch(0.17 0.02 230);
+    --sidebar-accent: oklch(0.27 0.012 255);
+    --sidebar-accent-foreground: oklch(0.95 0.006 255);
+    --sidebar-border: oklch(1 0 0 / 9%);
+    --sidebar-ring: oklch(0.75 0.1 205);
+    --panel: oklch(0.225 0.012 255);
+    --signal: oklch(0.82 0.11 205);
+    --signal-foreground: oklch(0.17 0.02 230);
+    --signal-soft: oklch(0.82 0.11 205 / 12%);
+    --syntax-key: oklch(0.86 0.07 215);
+    --syntax-string: oklch(0.86 0.08 75);
+    --syntax-number: oklch(0.85 0.12 150);
+    --syntax-literal: oklch(0.82 0.09 300);
+    --syntax-punct: oklch(0.64 0.012 255);
+    --art-field-l: 0.3;
+    --art-field-c: 0.045;
+    --art-glyph-l: 0.37;
+    --art-glyph-c: 0.05;
+    --art-line-l: 0.8;
+    --art-line-c: 0.08;
+    --art-kind-l: 0.88;
+    --art-kind-c: 0.04;
 }
 
 @layer base {
@@ -127,4 +171,140 @@
   html {
     @apply font-sans;
     }
+}
+
+@layer components {
+  /* Endpoint rail: the active route carries a signal-coloured edge, not only a tint. */
+  .rail-link {
+    display: block;
+    border-left: 2px solid transparent;
+    padding: 0.375rem 0.75rem 0.375rem 0.875rem;
+    color: var(--muted-foreground);
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+  .rail-link:hover {
+    color: var(--foreground);
+  }
+  .rail-link[aria-current="page"] {
+    border-left-color: var(--signal);
+    color: var(--foreground);
+  }
+  .rail-link[aria-current="page"] .rail-path {
+    color: var(--signal);
+  }
+  .rail-path {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    color: var(--muted-foreground);
+    overflow-wrap: anywhere;
+  }
+
+  /* Code viewer: numbered lines, horizontal scroll by default, optional wrapping. */
+  .code-view {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    tab-size: 2;
+  }
+  .code-lines {
+    min-width: 100%;
+    width: max-content;
+    padding: 0.625rem 0;
+  }
+  .code-view[data-wrap="true"] .code-lines {
+    width: auto;
+  }
+  .code-line {
+    display: grid;
+    grid-template-columns: var(--gutter, 3ch) minmax(0, 1fr);
+    column-gap: 1rem;
+  }
+  .code-ln {
+    position: sticky;
+    left: 0;
+    padding-left: 0.75rem;
+    text-align: right;
+    color: var(--muted-foreground);
+    background: var(--panel);
+    user-select: none;
+    opacity: 0.75;
+  }
+  .code-text {
+    padding-right: 1rem;
+    white-space: pre;
+  }
+  .code-view[data-wrap="true"] .code-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .tok-key {
+    color: var(--syntax-key);
+  }
+  .tok-string {
+    color: var(--syntax-string);
+  }
+  .tok-number {
+    color: var(--syntax-number);
+  }
+  .tok-literal {
+    color: var(--syntax-literal);
+    font-weight: 500;
+  }
+  .tok-punct {
+    color: var(--syntax-punct);
+  }
+  .tok-command {
+    color: var(--syntax-key);
+    font-weight: 500;
+  }
+  .tok-flag {
+    color: var(--syntax-literal);
+  }
+
+  /* Generated card artwork: six hue families, tones per theme, shapes keyed by resource kind. */
+  .art {
+    --art-h: 205;
+    display: block;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-sans);
+  }
+  .art[data-hue="1"] { --art-h: 250; }
+  .art[data-hue="2"] { --art-h: 295; }
+  .art[data-hue="3"] { --art-h: 155; }
+  .art[data-hue="4"] { --art-h: 70; }
+  .art[data-hue="5"] { --art-h: 25; }
+  .art-field {
+    fill: oklch(var(--art-field-l) var(--art-field-c) var(--art-h));
+  }
+  .art-glyph {
+    fill: oklch(var(--art-glyph-l) var(--art-glyph-c) var(--art-h));
+    font-weight: 600;
+    letter-spacing: -0.06em;
+  }
+  .art-line {
+    fill: none;
+    stroke: oklch(var(--art-line-l) var(--art-line-c) var(--art-h));
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .art-fill {
+    fill: oklch(var(--art-line-l) var(--art-line-c) var(--art-h));
+  }
+  .art-kind {
+    fill: oklch(var(--art-kind-l) var(--art-kind-c) var(--art-h));
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-link,
+  .course-card {
+    transition: none;
+  }
 }

@@ -22,6 +22,11 @@ export const RESOURCE_SHAPE = `{
     "sections": ["…"]
   },
   "media": "…",
+  "artwork": {
+    "url": "string",
+    "alt": "string | null",
+    "sourceUrl": "string"
+  },
   "provenance": {
     "sourceUrls": ["string"],
     "fetchedAt": "string | null",

@@ -16,6 +16,25 @@ export function formatSeconds(seconds: number): string {
   return fmt(copy.units.minutesSeconds, { minutes: Math.floor(seconds / 60), seconds: seconds % 60 })
 }
 
+// The duration field that measures a resource of this kind as a whole.
+const KIND_DURATION: Partial<Record<string, keyof ResourceDuration>> = {
+  course: 'courseMinutes',
+  'learning-path': 'pathMinutes',
+  video: 'videoSeconds',
+}
+
+/**
+ * One duration for compact views such as course cards, preferring the field that matches the kind.
+ * `matchesKind` is false when the value measures another scope (for example only a course duration
+ * on a learning path), so the view must show its label. Detail and reference views list every field.
+ */
+export function primaryDuration(kind: string, duration: ResourceDuration): { entry: DurationEntry; matchesKind: boolean } | null {
+  const entries = durationEntries(duration)
+  const match = entries.find((entry) => entry.key === KIND_DURATION[kind])
+  if (match) return { entry: match, matchesKind: true }
+  return entries.length ? { entry: entries[0], matchesKind: false } : null
+}
+
 // A learning path and its course keep distinct durations, so each known value is listed separately.
 export function durationEntries(duration: ResourceDuration): DurationEntry[] {
   const entries: DurationEntry[] = []

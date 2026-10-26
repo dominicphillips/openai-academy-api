@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { copy } from '@/copy'
 import { useRequest } from '@/hooks/use-request'
-import { CATEGORIES_PATH, curlFor, toCategoryList } from '@/lib/api'
+import { CATEGORIES_PATH, toCategoryList } from '@/lib/api'
 import { CATEGORIES_SHAPE } from '@/lib/examples'
 import { categoryRoute } from '@/lib/routes'
 
@@ -19,21 +19,7 @@ export function CategoriesPage() {
     <article className="space-y-10">
       <PageHeader title={copy.categories.title} lede={copy.categories.lede} />
 
-      <Section title={copy.categories.responseHeading} lede={copy.categories.shapeNote}>
-        <Definitions
-          rows={[
-            { name: 'items', type: 'Category[]', note: response.items },
-            { name: 'items[].id', type: 'string', note: response.id },
-            { name: 'items[].label', type: 'string', note: response.label },
-            { name: 'items[].count', type: 'number', note: response.count },
-            { name: 'snapshotId', type: 'string', note: response.snapshotId },
-          ]}
-        />
-        <CodeBlock label={copy.labels.shape} code={CATEGORIES_SHAPE} />
-        <CodeBlock label={copy.labels.curl} code={curlFor(CATEGORIES_PATH)} />
-      </Section>
-
-      <Section title={copy.categories.tryHeading}>
+      <Section wide title={copy.categories.tryHeading}>
         <RequestPanel path={CATEGORIES_PATH} state={state} onRun={() => run(CATEGORIES_PATH)} />
         {state.phase === 'loading' ? <Skeleton className="h-32 w-full" aria-hidden="true" /> : null}
         {result ? (
@@ -72,6 +58,19 @@ export function CategoriesPage() {
             )}
           </div>
         ) : null}
+      </Section>
+
+      <Section title={copy.categories.responseHeading} lede={copy.categories.shapeNote}>
+        <Definitions
+          rows={[
+            { name: 'items', type: 'Category[]', note: response.items },
+            { name: 'items[].id', type: 'string', note: response.id },
+            { name: 'items[].label', type: 'string', note: response.label },
+            { name: 'items[].count', type: 'number', note: response.count },
+            { name: 'snapshotId', type: 'string', note: response.snapshotId },
+          ]}
+        />
+        <CodeBlock label={copy.labels.shape} language="json" code={CATEGORIES_SHAPE} />
       </Section>
     </article>
   )

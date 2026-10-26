@@ -16,7 +16,10 @@
     "status": "",
     "github": "",
     "openapi": "",
-    "health": ""
+    "health": "",
+    "primaryLabel": "",
+    "courses": "",
+    "reference": ""
   },
   "footer": {
     "independence": "",
@@ -149,6 +152,7 @@
       "duration": "",
       "detail": "",
       "media": "",
+      "artwork": "",
       "provenance": ""
     },
     "tryHeading": "",
@@ -219,5 +223,27 @@
   "notFound": {
     "title": "",
     "lede": ""
+  },
+  "theme": {
+    "toggleToLight": "",
+    "toggleToDark": ""
+  },
+  "code": {
+    "enableWrap": "",
+    "disableWrap": "",
+    "previewTruncated": ""
+  },
+  "home": {
+    "title": "",
+    "lede": "",
+    "authorNote": "",
+    "authorByline": "",
+    "catalogHeading": "",
+    "searchLabel": "",
+    "searchAction": "",
+    "inspect": "",
+    "loadMore": "",
+    "empty": "",
+    "clearFilters": ""
   }
 }

@@ -47,12 +47,34 @@ export function OverviewPage() {
     <article className="space-y-10">
       <PageHeader title={copy.overview.title} lede={copy.overview.lede} />
 
+      <Section wide title={copy.overview.tryHeading} lede={copy.overview.tryLede}>
+        <RequestPanel path={path} state={state} onRun={() => run(path)}>
+          <div className="space-y-1.5">
+            <label htmlFor="try-endpoint" className="text-sm font-medium">
+              {copy.overview.endpointLabel}
+            </label>
+            <Select value={path} onValueChange={setPath}>
+              <SelectTrigger id="try-endpoint" className="w-full font-mono text-[13px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TRY_PATHS.map((option) => (
+                  <SelectItem key={option} value={option} className="font-mono text-[13px]">
+                    GET {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </RequestPanel>
+      </Section>
+
       <Section title={copy.overview.baseUrlHeading} lede={copy.overview.baseUrlLede}>
-        <CodeBlock label={copy.labels.baseUrl} code={API_BASE} />
+        <CodeBlock label={copy.labels.baseUrl} code={API_BASE} wrapToggle={false} />
       </Section>
 
       <Section title={copy.overview.quickStartHeading} lede={copy.overview.quickStartLede}>
-        <CodeBlock label={copy.labels.curl} code={curlFor(QUICK_START_PATH)} />
+        <CodeBlock label={copy.labels.curl} language="bash" code={curlFor(QUICK_START_PATH)} />
       </Section>
 
       <Section title={copy.overview.endpointsHeading} lede={copy.overview.endpointsLede}>
@@ -90,27 +112,6 @@ export function OverviewPage() {
             </TableBody>
           </Table>
         </div>
-      </Section>
-
-      <Section title={copy.overview.tryHeading} lede={copy.overview.tryLede}>
-        <div className="space-y-1.5">
-          <label htmlFor="try-endpoint" className="text-sm font-medium">
-            {copy.overview.endpointLabel}
-          </label>
-          <Select value={path} onValueChange={setPath}>
-            <SelectTrigger id="try-endpoint" className="w-full max-w-md font-mono text-[13px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TRY_PATHS.map((option) => (
-                <SelectItem key={option} value={option} className="font-mono text-[13px]">
-                  GET {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <RequestPanel path={path} state={state} onRun={() => run(path)} />
       </Section>
 
       <Section title={copy.overview.conventionsHeading}>

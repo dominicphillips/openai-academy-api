@@ -16,7 +16,10 @@
     "status": "Status",
     "github": "GitHub",
     "openapi": "OpenAPI spec",
-    "health": "Health check"
+    "health": "Health check",
+    "primaryLabel": "Main",
+    "courses": "Catalog",
+    "reference": "API reference"
   },
   "footer": {
     "independence": "Independent open-source DeployedWork project. Not an official OpenAI service or an access or provisioning service.",
@@ -149,6 +152,7 @@
       "duration": "Object with separate courseMinutes, pathMinutes, and videoSeconds fields; values are never combined.",
       "detail": "Structured learning notes containing free-text audience, prerequisites, objectives, and ordered curriculum sections.",
       "media": "Permitted external media references with evidence URLs; empty unless reuse permission is documented.",
+      "artwork": "Public cover image metadata: url (HTTPS image URL on d2xo500swnpgl1.cloudfront.net), alt (text or null), and sourceUrl (an Academy page listed in provenance.sourceUrls). Null when no cover is recorded; unlike media, it carries no reuse permission.",
       "provenance": "Source URLs, UTC fetch timestamp, normalized metadata SHA-256 hash, and collection method (managed-agent, manual, or fixture)."
     },
     "tryHeading": "Inspect a resource by ID",
@@ -219,5 +223,27 @@
   "notFound": {
     "title": "Page not found",
     "lede": "No documentation page matches this URL path."
+  },
+  "theme": {
+    "toggleToLight": "Switch to light mode",
+    "toggleToDark": "Switch to dark mode"
+  },
+  "code": {
+    "enableWrap": "Wrap lines",
+    "disableWrap": "Unwrap lines",
+    "previewTruncated": "Showing the first {shown} of {total} lines. Copy still copies the full response."
+  },
+  "home": {
+    "title": "Browse public OpenAI Academy learning resources",
+    "lede": "Pick a category or search titles, summaries, and tags, then open a resource on academy.openai.com. The cards load from this independent, read-only API, which serves a snapshot of public Academy metadata.",
+    "authorNote": "I built this to share with portfolio companies and internal teams, so they can build learning resources for their own teams. Browse it here, or use the API to pull the catalog into your own tools, with links back to the official pages.",
+    "authorByline": "Dominic Phillips",
+    "catalogHeading": "Search the catalog",
+    "searchLabel": "Search titles, summaries, and tags",
+    "searchAction": "Search",
+    "inspect": "View API record",
+    "loadMore": "Load more",
+    "empty": "No resources match this search or category. Try different keywords or another category.",
+    "clearFilters": "Clear filters"
   }
 }

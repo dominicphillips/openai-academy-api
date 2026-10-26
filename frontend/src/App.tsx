@@ -3,6 +3,7 @@ import { Shell, type PageKey } from '@/components/layout'
 import { copy, fmt } from '@/copy'
 import { useLocation } from '@/lib/router'
 import { CategoriesPage } from '@/pages/categories'
+import { HomePage } from '@/pages/home'
 import { NotFoundPage } from '@/pages/not-found'
 import { OverviewPage } from '@/pages/overview'
 import { ResourceDetailPage } from '@/pages/resource-detail'
@@ -14,8 +15,10 @@ interface Route {
   id?: string
 }
 
+// The course overview owns "/"; the API reference overview lives at /reference (the server keeps /docs).
 function resolve(pathname: string): Route {
-  if (pathname === '/') return { page: 'overview' }
+  if (pathname === '/') return { page: 'home' }
+  if (pathname === '/reference') return { page: 'overview' }
   if (pathname === '/resources') return { page: 'resources' }
   if (pathname === '/resource') return { page: 'resourceDetail' }
   const detail = pathname.match(/^\/resources\/([^/]+)$/)
@@ -26,6 +29,7 @@ function resolve(pathname: string): Route {
 }
 
 const TITLES: Record<PageKey, () => string> = {
+  home: () => copy.home.title,
   overview: () => copy.overview.title,
   resources: () => copy.resources.title,
   resourceDetail: () => copy.resource.title,
@@ -45,6 +49,9 @@ export default function App() {
 
   let page
   switch (route.page) {
+    case 'home':
+      page = <HomePage search={search} />
+      break
     case 'overview':
       page = <OverviewPage />
       break

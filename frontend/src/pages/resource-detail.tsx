@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { ExternalLinkIcon } from 'lucide-react'
 import { CodeBlock } from '@/components/code-block'
 import { CopyButton } from '@/components/copy-button'
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { copy } from '@/copy'
 import { useRequest } from '@/hooks/use-request'
-import { curlFor, resourcePath, sectionLabel, toResource, type Resource } from '@/lib/api'
+import { resourcePath, sectionLabel, toResource, type Resource } from '@/lib/api'
 import { durationEntries } from '@/lib/duration'
 import { RESOURCE_SHAPE } from '@/lib/examples'
 import { formatDateTime, shortHash } from '@/lib/format'
@@ -194,9 +194,10 @@ export function ResourceDetailPage({ id }: { id?: string }) {
     if (id) run(resourcePath(id))
   }, [id, run])
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const next = draft.trim()
+  const next = draft.trim()
+
+  // The same ID runs again in place; a different ID becomes its own shareable route.
+  function runDraft() {
     if (!next) return
     if (next === id) run(resourcePath(id))
     else navigate(resourceRoute(next))
@@ -204,11 +205,36 @@ export function ResourceDetailPage({ id }: { id?: string }) {
 
   const fields = copy.resource.fields
   const resource = state.phase === 'done' ? toResource(state.result.json) : null
-  const displayPath = id ? resourcePath(id) : TEMPLATE_PATH
 
   return (
     <article className="space-y-10">
       <PageHeader title={copy.resource.title} lede={copy.resource.lede} />
+
+      <Section wide title={copy.resource.tryHeading} lede={copy.resource.idHint}>
+        <RequestPanel path={next ? resourcePath(next) : TEMPLATE_PATH} state={state} onRun={runDraft} showRun={next !== ''}>
+          <div className="space-y-1.5">
+            <label htmlFor="resource-id" className="text-sm font-medium">
+              {copy.resource.idLabel}
+            </label>
+            <Input
+              id="resource-id"
+              autoComplete="off"
+              spellCheck={false}
+              className="font-mono text-[13px]"
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+            />
+          </div>
+        </RequestPanel>
+
+        {state.phase === 'loading' ? <Skeleton className="h-40 w-full" aria-hidden="true" /> : null}
+        {resource ? (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold">{copy.resource.viewHeading}</h3>
+            <ResourceView resource={resource} />
+          </div>
+        ) : null}
+      </Section>
 
       <Section title={copy.resource.fieldsHeading} lede={copy.resource.shapeNote}>
         <Definitions
@@ -225,42 +251,11 @@ export function ResourceDetailPage({ id }: { id?: string }) {
             { name: 'duration', type: 'object', note: fields.duration },
             { name: 'detail', type: 'object', note: fields.detail },
             { name: 'media', type: 'object[]', note: fields.media },
+            { name: 'artwork', type: 'object | null', note: fields.artwork },
             { name: 'provenance', type: 'object', note: fields.provenance },
           ]}
         />
-        <CodeBlock label={copy.labels.shape} code={RESOURCE_SHAPE} />
-        <CodeBlock label={copy.labels.curl} code={curlFor(displayPath)} />
-      </Section>
-
-      <Section title={copy.resource.tryHeading} lede={copy.resource.idHint}>
-        <form onSubmit={onSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <label htmlFor="resource-id" className="text-sm font-medium">
-              {copy.resource.idLabel}
-            </label>
-            <Input
-              id="resource-id"
-              autoComplete="off"
-              spellCheck={false}
-              className="font-mono text-[13px]"
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-            />
-          </div>
-          <Button type="submit" className="sm:mb-0">
-            {copy.actions.run}
-          </Button>
-        </form>
-
-        <RequestPanel path={displayPath} state={state} onRun={id ? () => run(resourcePath(id)) : undefined} showRun={Boolean(id)} />
-
-        {state.phase === 'loading' ? <Skeleton className="h-40 w-full" aria-hidden="true" /> : null}
-        {resource ? (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold">{copy.resource.viewHeading}</h3>
-            <ResourceView resource={resource} />
-          </div>
-        ) : null}
+        <CodeBlock label={copy.labels.shape} language="json" code={RESOURCE_SHAPE} />
       </Section>
     </article>
   )

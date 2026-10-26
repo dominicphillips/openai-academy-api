@@ -1,10 +1,9 @@
 import { Bullets, Definitions, PageHeader, Section } from '@/components/doc'
-import { CodeBlock } from '@/components/code-block'
 import { RequestPanel } from '@/components/request-panel'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { copy } from '@/copy'
 import { useRequest } from '@/hooks/use-request'
-import { STATUS_PATH, curlFor, isRecord } from '@/lib/api'
+import { STATUS_PATH, isRecord } from '@/lib/api'
 
 type Primitive = string | number | boolean | null
 
@@ -28,19 +27,7 @@ export function StatusPage() {
     <article className="space-y-10">
       <PageHeader title={copy.status.title} lede={copy.status.lede} />
 
-      <Section title={copy.status.fieldsHeading}>
-        <Definitions
-          rows={[
-            { name: 'state', note: copy.status.fields.freshness },
-            { name: 'resourceCount', type: 'number', note: copy.status.fields.resourceCount },
-            { name: 'coverage', note: copy.status.fields.coverage },
-          ]}
-        />
-        <Bullets items={[copy.status.note]} />
-        <CodeBlock label={copy.labels.curl} code={curlFor(STATUS_PATH)} />
-      </Section>
-
-      <Section title={copy.status.tryHeading}>
+      <Section wide title={copy.status.tryHeading}>
         <RequestPanel path={STATUS_PATH} state={state} onRun={() => run(STATUS_PATH)} />
         {entries.length ? (
           <div className="space-y-3">
@@ -65,6 +52,17 @@ export function StatusPage() {
             </div>
           </div>
         ) : null}
+      </Section>
+
+      <Section title={copy.status.fieldsHeading}>
+        <Definitions
+          rows={[
+            { name: 'state', note: copy.status.fields.freshness },
+            { name: 'resourceCount', type: 'number', note: copy.status.fields.resourceCount },
+            { name: 'coverage', note: copy.status.fields.coverage },
+          ]}
+        />
+        <Bullets items={[copy.status.note]} />
       </Section>
     </article>
   )
