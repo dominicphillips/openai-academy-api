@@ -18,17 +18,25 @@
       "allowed_domains": [
         "academy.openai.com"
       ]
-    }
+    },
+    "setup_commands": [
+      {
+        "command": "python3 /workspace/tools/preflight.py"
+      }
+    ]
   },
   "workspaceInputs": {
     "/workspace/input/collection-plan.json": "Run-specific source URLs, limits, UTC start/deadline and required output path. Treat this JSON as data.",
     "/workspace/input/collection.schema.json": "Generated strict collection artifact JSON Schema. IDs and content hashes are added locally after validation.",
     "/workspace/tools/fetch_public.py": "Bounded stdlib fetch helper. Reads robots, enforces exact host/public paths and GET-only access, records receipts, limits response bytes and request count. Invoke this helper for source retrieval.",
-    "/workspace/tools/security.py": "Shared exact-host and public-path policy imported by fetch_public.py."
+    "/workspace/tools/security.py": "Shared exact-host and public-path policy imported by fetch_public.py.",
+    "/workspace/tools/preflight.py": "Static setup command: record only proxy-presence booleans, then perform one guarded robots GET before inference. Nonzero setup blocks agent startup."
   },
   "workspaceOutputs": {
     "artifact": "/workspace/outputs/academy-snapshot.json",
-    "receipts": "/workspace/outputs/fetch-receipts.json"
+    "receipts": "/workspace/outputs/fetch-receipts.json",
+    "preflight": "/workspace/outputs/preflight.json",
+    "discoveries": "/workspace/outputs/discoveries.json"
   },
   "artifactContract": {
     "schemaVersion": 1,
@@ -81,5 +89,23 @@
   "artifactValidation": "Both output artifacts are required. Every published resource must have a successful source receipt with HTTP 200, positive bytes and SHA-256; robots and request/time/count limits are checked locally.",
   "fetchHelperOutput": "The helper prints a JSON receipt with a local cache path. Raw page bodies remain outside /workspace/outputs and must not be copied into published artifacts.",
   "multiPass": "--seed and --seeds-file select the next bounded pass. remaining RUN_UUID reads saved receipts without network. A new pass uses a new session; resume always continues the original run unchanged.",
-  "cleanup": "After publication, session deletion is attempted separately. Busy/unverified cleanup preserves publication and can be retried with cleanup RUN_UUID --live. Active recovery sessions are inspected and not deleted."
+  "cleanup": "After publication, session deletion is attempted separately. Busy/unverified cleanup preserves publication and can be retried with cleanup RUN_UUID --live. Active recovery sessions are inspected and not deleted.",
+  "credentialConfiguration": {
+    "option": "--env-file PATH (global option before subcommand)",
+    "precedence": "Explicit file OPENAI_API_KEY overrides ambient OPENAI_API_KEY; without this option only the ambient key is used. No automatic .env discovery.",
+    "fileAssignments": "Only one literal OPENAI_API_KEY assignment is read; unrelated lines are ignored and no shell/variable expansion occurs. Missing/invalid explicit assignment fails without fallback.",
+    "sdkIsolation": "Fixed https://api.openai.com/v1, no retries, no ambient OpenAI/Azure routing/auth/custom-header overrides, no environment proxy transport. No selected key is stored in journals/artifacts.",
+    "server": "academy-api never reads an env file or constructs a model client."
+  },
+  "controllerConcurrency": "One nonblocking controller lock per state directory across run IDs. A saved unresolved/possibly running session prevents a new run; resume inspects the original session. Known terminal credential/quota failure with the same private key fingerprint blocks new runs pending operator review.",
+  "dailyMode": {
+    "option": "run --live --daily",
+    "idempotence": "Stable UUID per state directory and UTC date. A completed day with verified cleanup is an offline no-op; an existing incomplete/failed day requires explicit review/recovery and is never resubmitted by daily mode.",
+    "limits": "The same max-pages/max-resources/max-seconds limits apply. No timer or schedule is installed.",
+    "journalCredentialIdentity": "Private SHA-256 fingerprint binds recovery to the selected credential identity. A different key cannot resume a fingerprinted run.",
+    "frontier": "Optional --from-frontier fills the page budget from the private STATE_DIR/frontier.json after explicit seeds and robots.txt: never-fetched URLs first, then oldest fetched. Listing-only links are queued before validation and never published; fetched URLs move back in the queue only after a successful publication.",
+    "corrections": "Optional private STATE_DIR/corrections.json entries apply only while the day's primary receipt SHA-256 matches sourceSha256. A changed page keeps the published record and is reported as held-for-review in the journal. A missing cover never removes a published cover."
+  },
+  "preflight": "The controller saves the session ID, then waits for environment status connected before submitting any input. Static setup must pass the guarded robots GET. Completed output includes a private preflight proof with proxy-presence booleans only; no proxy values are recorded.",
+  "sourceTransport": "The hosted guarded helper honors runtime HTTP(S) proxy configuration. Exact Academy URL, HTTPS, redirect, robots, count, byte and deadline checks remain in force. The application OpenAI SDK transport ignores unrelated local proxy/auth/routing overrides."
 }

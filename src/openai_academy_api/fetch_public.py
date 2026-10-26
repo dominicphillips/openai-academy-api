@@ -51,7 +51,9 @@ class PublicFetcher:
         self.deadline = datetime.fromisoformat(plan["deadlineAt"].replace("Z", "+00:00"))
         if self.deadline.tzinfo is None:
             raise FetchBlocked("Deadline must have a timezone")
-        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        # Hosted restricted egress may require its runtime-provided HTTP(S) proxy.
+        # Keep the destination guard and no-redirect policy in either transport.
+        self.opener = urllib.request.build_opener(urllib.request.ProxyHandler(), NoRedirect())
 
     def _save(self, value: dict) -> None:
         temporary = self.receipts_path.with_suffix(".tmp")

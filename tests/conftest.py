@@ -60,3 +60,14 @@ def write_artifact(tmp_path):
         return path
 
     return write
+
+
+@pytest.fixture(autouse=True)
+def no_deployment_purge(monkeypatch):
+    # Tests never read a real deployment token or call Cloudflare.
+    for name in (
+        "ACADEMY_CLOUDFLARE_ZONE_ID",
+        "ACADEMY_CLOUDFLARE_HOSTNAME",
+        "ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE",
+    ):
+        monkeypatch.delenv(name, raising=False)

@@ -1,5 +1,38 @@
 {
   "$defs": {
+    "ArtworkReference": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "alt": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Alt"
+        },
+        "sourceUrl": {
+          "title": "Sourceurl",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "sourceUrl"
+      ],
+      "title": "ArtworkReference",
+      "type": "object"
+    },
     "Category": {
       "additionalProperties": false,
       "properties": {
@@ -332,6 +365,17 @@
           "maxItems": 20,
           "title": "Media",
           "type": "array"
+        },
+        "artwork": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ArtworkReference"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "provenance": {
           "$ref": "#/$defs/InputProvenance"

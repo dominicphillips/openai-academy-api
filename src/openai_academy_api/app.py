@@ -9,7 +9,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from . import __version__
 from .models import (
@@ -26,6 +26,9 @@ from .models import (
     json_hash,
 )
 from .storage import SnapshotStore, SnapshotUnavailable
+
+# Browsers revalidate after a minute; shared caches keep a day and are purged on publication.
+CATALOG_CACHE = "public, max-age=60, s-maxage=86400"
 
 
 class Cursor(Model):
@@ -59,6 +62,19 @@ def decode_cursor(value: str) -> Cursor:
         raise fail(400, "invalid-cursor") from None
 
 
+def cached_result(request: Request, value: Model) -> Response:
+    data = value.model_dump(mode="json", by_alias=True)
+    etag = f'W/"{json_hash(data)}"'
+    headers = {"ETag": etag, "Cache-Control": CATALOG_CACHE}
+    candidates = request.headers.get("if-none-match", "").split(",")
+    if any(
+        token.strip() == "*" or token.strip().removeprefix("W/") == etag.removeprefix("W/")
+        for token in candidates
+    ):
+        return Response(status_code=304, headers=headers)
+    return JSONResponse(content=data, headers=headers)
+
+
 def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None) -> FastAPI:
     store = SnapshotStore(Path(snapshot_path))
     app = FastAPI(title="Academy Resource API", version=__version__, debug=False, redoc_url=None)
@@ -68,7 +84,8 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
         allow_origins=["*"],
         allow_credentials=False,
         allow_methods=["GET", "HEAD"],
-        allow_headers=["Accept", "Content-Type"],
+        allow_headers=["Accept", "Content-Type", "If-None-Match"],
+        expose_headers=["ETag"],
     )
 
     @app.middleware("http")
@@ -78,7 +95,10 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        if "application/json" in response.headers.get("Content-Type", ""):
+        if (
+            "application/json" in response.headers.get("Content-Type", "")
+            or response.status_code == 304
+        ):
             response.headers["Content-Security-Policy"] = (
                 "default-src 'none'; frame-ancestors 'none'"
             )
@@ -93,15 +113,26 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
                 else "default-src 'self'; base-uri 'self'; object-src 'none'; "
                 "frame-ancestors 'none'; "
                 "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-                "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; "
+                "font-src 'self' https://fonts.gstatic.com; "
+                "img-src 'self' data: https://d2xo500swnpgl1.cloudfront.net; "
                 "connect-src 'self'; "
                 "form-action 'none'"
             )
         if request.url.scheme == "https":
             response.headers["Strict-Transport-Security"] = "max-age=31536000"
+        if request.url.path.startswith("/v1/"):
+            # Edge caches key on the URL alone, so CORS headers must not depend on Origin.
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Expose-Headers"] = "ETag"
         response.headers.setdefault("Cache-Control", "public, max-age=60")
-        if request.url.path.startswith("/health") or request.url.path == "/v1/status":
+        if (
+            response.status_code >= 400
+            or request.url.path.startswith("/health")
+            or request.url.path == "/v1/status"
+        ):
             response.headers["Cache-Control"] = "no-store"
+            if "ETag" in response.headers:
+                del response.headers["ETag"]
         return response
 
     @app.exception_handler(SnapshotUnavailable)
@@ -128,8 +159,12 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
     def status():
         return store.status()
 
-    @app.get("/v1/categories", response_model=CategoryPage)
-    def categories():
+    @app.get(
+        "/v1/categories",
+        response_model=CategoryPage,
+        responses={304: {"description": "Not modified"}},
+    )
+    def categories(request: Request):
         snapshot = store.read()
         counts = {
             x.id: sum(x.id in r.category_ids for r in snapshot.resources)
@@ -139,10 +174,15 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
             CategoryCount(id=x.id, label=x.label, count=counts[x.id])
             for x in sorted(snapshot.categories, key=lambda c: c.id)
         ]
-        return CategoryPage(items=items, snapshot_id=snapshot.snapshot_id)
+        return cached_result(request, CategoryPage(items=items, snapshot_id=snapshot.snapshot_id))
 
-    @app.get("/v1/resources", response_model=ResourcePage)
+    @app.get(
+        "/v1/resources",
+        response_model=ResourcePage,
+        responses={304: {"description": "Not modified"}},
+    )
     def resources(
+        request: Request,
         q: Annotated[str | None, Query(max_length=200)] = None,
         category: Annotated[Slug | None, Query()] = None,
         kind: Kind | None = None,
@@ -181,17 +221,27 @@ def create_app(snapshot_path: Path | str, frontend_dir: Path | str | None = None
             if page and start + limit < len(items)
             else None
         )
-        return ResourcePage(
-            items=page, next_cursor=next_cursor, total=len(items), snapshot_id=snapshot.snapshot_id
+        return cached_result(
+            request,
+            ResourcePage(
+                items=page,
+                next_cursor=next_cursor,
+                total=len(items),
+                snapshot_id=snapshot.snapshot_id,
+            ),
         )
 
-    @app.get("/v1/resources/{resource_id}", response_model=Resource)
-    def resource(resource_id: str):
+    @app.get(
+        "/v1/resources/{resource_id}",
+        response_model=Resource,
+        responses={304: {"description": "Not modified"}},
+    )
+    def resource(resource_id: str, request: Request):
         if not re.fullmatch(r"oa_[a-f0-9]{24}", resource_id):
             raise fail(404, "resource-not-found")
         for item in store.read().resources:
             if item.id == resource_id:
-                return item
+                return cached_result(request, item)
         raise fail(404, "resource-not-found")
 
     if frontend_dir is not None:

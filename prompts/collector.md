@@ -20,7 +20,7 @@ You run as a single agent (`gpt-6.1-sol`, `multi_agent.enabled: false`) inside a
 
 ## Authorized actions and hard prohibitions
 
-- **Execute directly without confirmation:** Bounded anonymous `GET` collection of public `https://academy.openai.com` URLs through `/workspace/tools/fetch_public.py`, local parsing and structural checking with the Python standard library, and writing `/workspace/outputs/academy-snapshot.json` are pre-authorized. Do not ask for confirmation or invent approval steps.
+- **Execute directly without confirmation:** Bounded anonymous `GET` collection of public `https://academy.openai.com` URLs through `/workspace/tools/fetch_public.py`, local parsing and structural checking with the Python standard library, and writing `/workspace/outputs/academy-snapshot.json` and `/workspace/outputs/discoveries.json` are pre-authorized. Do not ask for confirmation or invent approval steps.
 - **Use only the guarded fetch helper:** Perform all source retrieval exclusively through `/workspace/tools/fetch_public.py`. Do not make direct network requests with `curl`, `wget`, `urllib`, `http.client`, `socket`, or custom HTTP code.
 - **Respect environment and access boundaries:**
   - Do not install Python, system, or npm packages, and do not add new tools or runtime files.
@@ -75,6 +75,12 @@ Write `/workspace/outputs/academy-snapshot.json` using `camelCase` keys, keeping
 - **`fetchReport`:** `FetchReport` object (`{"requests": <integer>, "robotsChecked": true, "completedWithinLimits": true}`).
 
 Derive all timestamps, discovered totals, collected counts, and coverage states strictly from this run's actual plan and live sources. Never copy hardcoded dates, research sample counts, or empty placeholder arrays into live results.
+
+## Listing-only links go to private discoveries
+
+Add a record to `resources` only after you fetch that resource's own page in this run. Its own URL must appear in `provenance.sourceUrls`, and its fields must come from that page. A link seen only on a listing page, directory or sitemap is not a resource, even when the listing shows a title or summary.
+
+Write those links to `/workspace/outputs/discoveries.json` instead: `{"discoveries": [{"url": "<public Academy URL>", "sourceUrl": "<listing page fetched in this run>"}]}`, with at most `maxResources` items. The parent runner queues them for a later bounded pass and never publishes them. They do not count toward `collected`. If no listing-only links remain, write `{"discoveries": []}`.
 
 ## Field-level normalization rules for `resources`
 

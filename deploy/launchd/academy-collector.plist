@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Example LaunchAgent for one bounded collection per day. Replace every /path/to/ value.
+  It never runs at load, is never restarted on exit, and clears the inherited environment.
+  Remove the three ACADEMY_CLOUDFLARE_* lines if the API is not behind Cloudflare.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.example.academy-collector</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/env</string>
+    <string>-i</string>
+    <string>PATH=/usr/bin:/bin</string>
+    <string>HOME=/path/to/home</string>
+    <string>LANG=en_US.UTF-8</string>
+    <string>ACADEMY_CLOUDFLARE_ZONE_ID=0123456789abcdef0123456789abcdef</string>
+    <string>ACADEMY_CLOUDFLARE_HOSTNAME=api.example.com</string>
+    <string>ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE=/path/to/private/cache-purge-token</string>
+    <string>/path/to/openai-academy-api/.venv/bin/academy-collector</string>
+    <string>--env-file</string>
+    <string>/path/to/private/collector.env</string>
+    <string>--snapshot</string>
+    <string>/path/to/private/snapshot.json</string>
+    <string>--state-dir</string>
+    <string>/path/to/private/collector</string>
+    <string>run</string>
+    <string>--live</string>
+    <string>--daily</string>
+    <string>--from-frontier</string>
+    <string>--instructions</string>
+    <string>/path/to/openai-academy-api/prompts/collector.md</string>
+    <string>--seed</string>
+    <string>https://academy.openai.com/pages/courses</string>
+    <string>--max-pages</string>
+    <string>30</string>
+    <string>--max-resources</string>
+    <string>100</string>
+    <string>--max-seconds</string>
+    <string>900</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Hour</key>
+    <integer>4</integer>
+    <key>Minute</key>
+    <integer>17</integer>
+  </dict>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>Umask</key>
+  <integer>63</integer>
+  <key>WorkingDirectory</key>
+  <string>/path/to/openai-academy-api</string>
+  <key>StandardOutPath</key>
+  <string>/path/to/private/logs/academy-collector.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/path/to/private/logs/academy-collector.stderr.log</string>
+</dict>
+</plist>

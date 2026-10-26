@@ -46,7 +46,7 @@ Serving is separated from collection:
   ```
 
 - **What import computes:** `academy-collector import` accepts `--method manual` (default) or `--method fixture`. It validates the input artifact with Pydantic, computes each resource's deterministic `id` and `provenance.contentHash`, sets `provenance.method` to `manual` or `fixture`, merges records without deleting prior entries, and writes the target snapshot atomically alongside `.previous.json` and `.status.json` files.
-- **Hosted collector configuration:** A separately invoked private collector (`academy-collector` subcommands in [`examples/commands.json`](examples/commands.json) and runtime contract in [`schema/collector-runtime.json`](schema/collector-runtime.json)) is implemented in the repository for bounded operator runs and records `provenance.method: "managed-agent"` after verifying fetch receipts. Live collection is neither scheduled nor required to run the API, and no background scheduler is included.
+- **Hosted collector configuration:** A separately invoked private collector (`academy-collector` subcommands in [`examples/commands.json`](examples/commands.json) and runtime contract in [`schema/collector-runtime.json`](schema/collector-runtime.json)) is implemented in the repository for bounded operator runs and records `provenance.method: "managed-agent"` after verifying fetch receipts. Live collection is not required to run the API. A launchd example for one run per day is included but nothing installs or enables it; see [Self-hosting the API and daily collector](#self-hosting-the-api-and-daily-collector).
 
 ## Serving options and optional static frontend directory
 
@@ -87,6 +87,13 @@ All read endpoints are public and require no authentication. Full route contract
 
 `GET /v1/resources` returns `{"items": [...], "nextCursor": "...", "total": 0, "snapshotId": "..."}`. Pass `nextCursor` as `cursor` on the next request while keeping `q`, `category`, `kind`, and `audience` unchanged. Changing filters with an existing cursor returns `400`. If a new snapshot is published while paging, the server returns `409`; discard the old cursor and restart pagination from the first page.
 
+### Caching and conditional requests
+
+- **Catalog responses:** Successful `GET /v1/resources`, `GET /v1/resources/{id}`, and `GET /v1/categories` responses send `Cache-Control: public, max-age=60, s-maxage=86400` and a weak `ETag`. Browsers revalidate after 60 seconds; shared caches such as a CDN may keep a copy for up to one day. Send the `ETag` value in `If-None-Match` to receive `304 Not Modified` with an empty body.
+- **Never cached:** Every error response (including `409` cursor conflicts), `GET /v1/status`, `GET /health`, and `GET /health/ready` send `Cache-Control: no-store` and no `ETag`.
+- **Cache key:** CORS headers are the same for every request, so a shared cache can key catalog responses on the full URL, including the query string.
+- **After publication:** Until a shared cache is purged or its copy expires, it may serve responses from the previous snapshot. `GET /v1/status` is never cached and reports the current `snapshotId`, which you can compare with the `snapshotId` on catalog responses. A cursor from an older snapshot that reaches the server returns `409`.
+
 ## Resource schema, duration scopes, and provenance
 
 Responses use `camelCase` field names, and all documented nullable keys are present in serialized output (see [`schema/resource.schema.json`](schema/resource.schema.json) and [`schema/snapshot.schema.json`](schema/snapshot.schema.json)). Unknown or unsupported values remain `null` or `[]` rather than inferred text.
@@ -106,6 +113,79 @@ Responses use `camelCase` field names, and all documented nullable keys are pres
 
 - **Stale snapshots remain readable:** Failed refreshes keep the last valid snapshot available to `GET /v1/resources` and `GET /v1/categories`. By default, `GET /v1/status` reports `state: "stale"` when a snapshot's `generatedAt` timestamp is older than 7 days, when the latest read or refresh attempt failed, or when any category in `coverage[]` is not `complete`.
 - **Freshness vs. completeness:** `state` on `GET /v1/status` (`fresh`, `stale`, or `unavailable`) does not replace per-category coverage or per-resource timestamps. Always inspect `coverage[]` (`state`: `complete`, `partial`, or `not-collected`, plus `discovered` and `collected` counts) and each resource's `provenance.fetchedAt`.
+
+## Self-hosting the API and daily collector
+
+The server needs Python `>=3.11`, [`uv`](https://docs.astral.sh/uv/), and a validated snapshot file; it reads no key or env file. Collection additionally needs an OpenAI API key in a private env file passed with `--env-file`. Copy [`.env.template`](.env.template) for the key; the template also lists the optional settings that come from the collector's process environment.
+
+```bash
+uv sync --frozen
+uv run --frozen academy-collector validate-snapshot /srv/academy/snapshot.json
+uv run --frozen academy-api --snapshot /srv/academy/snapshot.json --host 127.0.0.1 --port 8000
+```
+
+### One collection per day
+
+Check the plan offline first; `dry-run` reads neither the key nor the network. Then run the same pass live with `--daily`. The global options go before the subcommand:
+
+```bash
+uv run --frozen academy-collector --state-dir /srv/academy/collector dry-run --from-frontier --seed https://academy.openai.com/pages/courses --max-pages 30 --max-resources 100 --max-seconds 900
+uv run --frozen academy-collector --env-file /srv/academy/collector.env --snapshot /srv/academy/snapshot.json --state-dir /srv/academy/collector run --live --daily --from-frontier --seed https://academy.openai.com/pages/courses --max-pages 30 --max-resources 100 --max-seconds 900
+```
+
+`--daily` gives each UTC date and state directory one run ID, so a scheduler can call the command repeatedly without paying for a second pass:
+
+- A day that already published and cleaned up its session exits without any network call. A failed or unfinished day is never submitted again.
+- A new day does not start while an earlier run might still be running, while a published run's session cleanup is incomplete, or after any failed or cancelled run that nobody has reviewed. A quota or authentication failure for the same key also holds every new run.
+- Only one controller can use a state directory at a time. Keep every manual and scheduled command on the same `--state-dir`.
+
+After reviewing a failed run, record the review so daily runs can continue. This makes no provider call and does not retry the failed run:
+
+```bash
+uv run --frozen academy-collector --state-dir /srv/academy/collector acknowledge RUN_UUID
+```
+
+### Reaching the whole Academy over several days
+
+Each pass stays within its page, resource and time limits. To reach pages beyond the seeds, the collector keeps a private queue of URLs, `frontier.json`, in the state directory. With `--from-frontier`, a pass first takes URLs that have never been fetched, then the ones fetched longest ago, after any `--seed` URLs and the `robots.txt` request.
+
+- Links the collector saw only on a listing page join the queue. They are never published; a resource is published only when its own page was fetched in that run.
+- The queue only grows. A failed or unpublished run adds its new links but leaves every URL in its place, so the next pass retries the same work. Daily holds and the state-directory lock still apply.
+
+Seed the queue from a saved run, then preview the next passes. The preview reads neither the key nor the network and changes nothing:
+
+```bash
+uv run --frozen academy-collector --state-dir /srv/academy/collector frontier bootstrap STATE_DIR/RUN_UUID/artifact.json STATE_DIR/RUN_UUID/receipts.json
+uv run --frozen academy-collector --state-dir /srv/academy/collector frontier plan --max-pages 30 --passes 5
+```
+
+### Corrections and kept covers
+
+Known extractor errors can be listed in `corrections.json` in the state directory. Each entry names a page, the SHA-256 of the page version it was checked against, the fields to set and a reason:
+
+```json
+{"schemaVersion": 1, "corrections": [{"url": "https://academy.openai.com/public/courses/example", "sourceSha256": "<64 hex characters>", "fields": {"duration.pathMinutes": null}, "reason": "The page states no path total."}]}
+```
+
+A correction applies only while the page fetched that day has the same hash. If the page changed, the collector does not publish the new extraction for that URL: the published record stays as it was, and the run journal lists the URL under `review` as `held-for-review`. If a fetch returns no cover for a record that already has one, the published cover is kept.
+
+### Scheduling
+
+Run the daily command once a day from a scheduler that does not restart or retry it. For macOS, [`deploy/launchd/academy-collector.plist`](deploy/launchd/academy-collector.plist) is an example LaunchAgent: replace the `/path/to/...` values, then install it with `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/academy-collector.plist`. It runs at 04:17 local time, never at load, with a private file mode mask, and clears the inherited environment. Remove it with `launchctl bootout gui/$(id -u)/com.example.academy-collector`.
+
+### Optional Cloudflare cache purge
+
+When the API is behind Cloudflare, the collector can ask Cloudflare to purge the API hostname after a publication that changes the snapshot. Set all three variables in the collector's process environment, or none:
+
+- `ACADEMY_CLOUDFLARE_ZONE_ID`: the zone ID.
+- `ACADEMY_CLOUDFLARE_HOSTNAME`: the exact API hostname. Only this hostname is purged, never the whole zone.
+- `ACADEMY_CLOUDFLARE_PURGE_TOKEN_FILE`: a private file holding an API token limited to the Cache Purge permission for that zone.
+
+Incomplete or invalid settings stop the command before any paid call, and the token is never sent to the hosted session or written to the journal. Cloudflare's success response means it accepted the purge request, which the run journal records as `edgePurge.state: "accepted"`. If the purge fails, the new snapshot stays published, the failure is recorded in the journal, and the command exits with status `3`. Do not rerun collection; retry only the purge, which is also the step to run after a manual `import` into the served snapshot:
+
+```bash
+uv run --frozen academy-collector purge-cache --live
+```
 
 ## Code license and source content rights
 

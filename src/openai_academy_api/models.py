@@ -20,6 +20,8 @@ from pydantic import (
 
 from .security import MEDIA_HOSTS, checked_https_url, public_academy_url, source_url, stable_id
 
+ARTWORK_HOSTS = frozenset({"d2xo500swnpgl1.cloudfront.net"})
+
 
 def camel(value: str) -> str:
     head, *tail = value.split("_")
@@ -146,6 +148,12 @@ class Provenance(InputProvenance):
     method: Literal["managed-agent", "manual", "fixture"]
 
 
+class ArtworkReference(Model):
+    url: Annotated[str, AfterValidator(lambda value: checked_https_url(value, ARTWORK_HOSTS))]
+    alt: ShortText | None = None
+    source_url: OfficialUrl
+
+
 class Metadata(Model):
     title: Title
     url: OfficialUrl
@@ -158,6 +166,7 @@ class Metadata(Model):
     duration: Duration = Field(default_factory=Duration)
     detail: Detail = Field(default_factory=Detail)
     media: list[MediaReference] = Field(default_factory=list, max_length=20)
+    artwork: ArtworkReference | None = None
 
     @model_validator(mode="after")
     def unique_values(self) -> Self:
@@ -176,6 +185,8 @@ class InputResource(Metadata):
     def primary_source(self) -> Self:
         if self.url not in self.provenance.source_urls:
             raise ValueError("Provenance must include the resource URL")
+        if self.artwork and self.artwork.source_url not in self.provenance.source_urls:
+            raise ValueError("Artwork source must be present in resource provenance")
         return self
 
 
@@ -191,6 +202,8 @@ class Resource(Metadata):
             raise ValueError("Resource content hash does not match its metadata")
         if self.url not in self.provenance.source_urls:
             raise ValueError("Provenance must include the resource URL")
+        if self.artwork and self.artwork.source_url not in self.provenance.source_urls:
+            raise ValueError("Artwork source must be present in resource provenance")
         return self
 
 
@@ -267,11 +280,17 @@ def json_hash(value: object) -> str:
 
 def metadata_hash(resource: Metadata) -> str:
     data = resource.model_dump(mode="json", by_alias=True, exclude={"id", "provenance"})
+    if data.get("artwork") is None:
+        data.pop("artwork", None)  # Preserve hashes of snapshots predating this additive field.
     return json_hash(data)
 
 
 def snapshot_hash(snapshot: Snapshot) -> str:
-    return json_hash(snapshot.model_dump(mode="json", by_alias=True, exclude={"snapshot_id"}))
+    data = snapshot.model_dump(mode="json", by_alias=True, exclude={"snapshot_id"})
+    for resource in data["resources"]:
+        if resource.get("artwork") is None:
+            resource.pop("artwork", None)
+    return json_hash(data)
 
 
 def validate_inventory(categories: list, resources: list, coverage: list[Coverage]) -> None:
@@ -325,4 +344,7 @@ def assemble_snapshot(
         else v
         for k, v in data.items()
     }
+    for resource in normalized["resources"]:
+        if resource.get("artwork") is None:
+            resource.pop("artwork", None)
     return Snapshot.model_validate(dict(data, snapshot_id=json_hash(normalized)))

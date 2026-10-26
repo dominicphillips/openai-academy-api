@@ -3,18 +3,76 @@
   "serialization": "camelCase; all documented nullable fields are present",
   "routes": {
     "GET /v1/resources": {
-      "query": {"q": "optional text, max 200 characters", "category": "optional category ID", "kind": "optional resource kind", "audience": "optional audience value", "cursor": "optional opaque cursor", "limit": "integer 1..100, default 20"},
-      "response": {"items": ["Resource"], "nextCursor": null, "total": 0, "snapshotId": "sha256"},
+      "query": {
+        "q": "optional text, max 200 characters",
+        "category": "optional category ID",
+        "kind": "optional resource kind",
+        "audience": "optional audience value",
+        "cursor": "optional opaque cursor",
+        "limit": "integer 1..100, default 20"
+      },
+      "response": {
+        "items": [
+          "Resource"
+        ],
+        "nextCursor": null,
+        "total": 0,
+        "snapshotId": "sha256"
+      },
       "ordering": "ascending stable resource ID",
-      "errors": {"400": "invalid cursor or cursor/filter mismatch", "409": "cursor belongs to a different snapshot", "422": "invalid query value", "503": "no valid snapshot"}
+      "errors": {
+        "400": "invalid cursor or cursor/filter mismatch",
+        "409": "cursor belongs to a different snapshot",
+        "422": "invalid query value",
+        "503": "no valid snapshot"
+      }
     },
-    "GET /v1/resources/{id}": {"response": "Resource", "errors": {"404": "unknown ID", "503": "no valid snapshot"}},
-    "GET /v1/categories": {"response": {"items": [{"id": "category ID", "label": "source-backed label", "count": 0}], "snapshotId": "sha256"}},
-    "GET /v1/status": {"response": {"state": "fresh|stale|unavailable", "snapshotId": null, "generatedAt": null, "lastAttemptAt": null, "lastSuccessAt": null, "resourceCount": 0, "coverage": []}},
-    "GET /health": {"response": {"status": "ok"}},
-    "GET /health/ready": {"response": {"status": "ready|unavailable"}},
-    "GET /openapi.json": {"response": "OpenAPI 3.1 document"},
-    "GET /docs": {"response": "Swagger UI"}
+    "GET /v1/resources/{id}": {
+      "response": "Resource",
+      "errors": {
+        "404": "unknown ID",
+        "503": "no valid snapshot"
+      }
+    },
+    "GET /v1/categories": {
+      "response": {
+        "items": [
+          {
+            "id": "category ID",
+            "label": "source-backed label",
+            "count": 0
+          }
+        ],
+        "snapshotId": "sha256"
+      }
+    },
+    "GET /v1/status": {
+      "response": {
+        "state": "fresh|stale|unavailable",
+        "snapshotId": null,
+        "generatedAt": null,
+        "lastAttemptAt": null,
+        "lastSuccessAt": null,
+        "resourceCount": 0,
+        "coverage": []
+      }
+    },
+    "GET /health": {
+      "response": {
+        "status": "ok"
+      }
+    },
+    "GET /health/ready": {
+      "response": {
+        "status": "ready|unavailable"
+      }
+    },
+    "GET /openapi.json": {
+      "response": "OpenAPI 3.1 document"
+    },
+    "GET /docs": {
+      "response": "Swagger UI"
+    }
   },
   "Resource": {
     "id": "oa_ plus first 24 lowercase hex characters of SHA-256 of canonical URL",
@@ -26,21 +84,95 @@
     "tags": [],
     "summary": null,
     "level": null,
-    "duration": {"courseMinutes": null, "pathMinutes": null, "videoSeconds": null},
+    "duration": {
+      "courseMinutes": null,
+      "pathMinutes": null,
+      "videoSeconds": null
+    },
     "detail": {
       "audience": null,
       "prerequisites": [],
       "objectives": [],
-      "sections": [{"title": null, "context": null, "units": [{"title": "official unit title", "url": "official public destination", "kind": "lesson|quiz|course", "context": null, "videoCount": null}]}]
+      "sections": [
+        {
+          "title": null,
+          "context": null,
+          "units": [
+            {
+              "title": "official unit title",
+              "url": "official public destination",
+              "kind": "lesson|quiz|course",
+              "context": null,
+              "videoCount": null
+            }
+          ]
+        }
+      ]
     },
     "media": [],
-    "provenance": {"sourceUrls": ["official source URL"], "fetchedAt": "UTC ISO 8601", "contentHash": "SHA-256 of normalized resource metadata", "method": "managed-agent|manual|fixture"}
+    "provenance": {
+      "sourceUrls": [
+        "official source URL"
+      ],
+      "fetchedAt": "UTC ISO 8601",
+      "contentHash": "SHA-256 of normalized resource metadata",
+      "method": "managed-agent|manual|fixture"
+    },
+    "artwork": null
   },
-  "MediaReference": {"kind": "video|audio|image|document", "url": "permitted external reference only", "permission": "permitted", "permissionEvidenceUrl": "official page establishing permission", "title": null},
-  "Category": {"id": "lowercase slug", "label": "source-backed label"},
-  "Coverage": {"categoryId": "category ID", "state": "complete|partial|not-collected", "discovered": null, "collected": 0},
-  "audienceValues": ["general", "knowledge-workers", "developers", "leaders", "educators", "students", "admins", "other"],
-  "levelValues": ["beginner", "intermediate", "advanced", null],
+  "MediaReference": {
+    "kind": "video|audio|image|document",
+    "url": "permitted external reference only",
+    "permission": "permitted",
+    "permissionEvidenceUrl": "official page establishing permission",
+    "title": null
+  },
+  "Category": {
+    "id": "lowercase slug",
+    "label": "source-backed label"
+  },
+  "Coverage": {
+    "categoryId": "category ID",
+    "state": "complete|partial|not-collected",
+    "discovered": null,
+    "collected": 0
+  },
+  "audienceValues": [
+    "general",
+    "knowledge-workers",
+    "developers",
+    "leaders",
+    "educators",
+    "students",
+    "admins",
+    "other"
+  ],
+  "levelValues": [
+    "beginner",
+    "intermediate",
+    "advanced",
+    null
+  ],
   "snapshotBehavior": "Public requests only read a validated local snapshot. They never crawl, run agents or spend. Failed refresh keeps the last valid snapshot. Age greater than 7 days reports stale by default.",
-  "staticServing": "Optional --frontend-dir. API routes are registered first. Fingerprinted assets are immutable; index/documents are no-cache. SPA fallback never handles /v1, /health, /openapi.json or API documentation routes."
+  "staticServing": "Optional --frontend-dir. API routes are registered first. Fingerprinted assets are immutable; index/documents are no-cache. SPA fallback never handles /v1, /health, /openapi.json or API documentation routes.",
+  "ArtworkReference": {
+    "url": "HTTPS cover metadata URL on exact observed official asset host d2xo500swnpgl1.cloudfront.net",
+    "alt": null,
+    "sourceUrl": "official Academy page included in provenance.sourceUrls"
+  },
+  "artworkBehavior": "Optional, additive public source metadata distinct from license-controlled media. No asset download/proxy or permission assertion. Missing/unknown artwork serializes as null; null artwork is excluded from normalized hashes for old-snapshot compatibility.",
+  "conditionalRequests": {
+    "routes": [
+      "GET /v1/resources",
+      "GET /v1/resources/{id}",
+      "GET /v1/categories"
+    ],
+    "validator": "Weak ETag of the complete normalized JSON representation; If-None-Match supports weak/strong equivalents, lists and *.",
+    "notModified": "304, empty body, same ETag/cache policy; request validation and cursor checks run first.",
+    "cacheControl": "public, max-age=60, s-maxage=60",
+    "uncached": "All HTTP errors, /v1/status and /health* use no-store and no ETag.",
+    "cors": "If-None-Match request header permitted; ETag response header exposed; origin * without credentials.",
+    "edgeKey": "Full query string; only successful public GET catalog responses. No status/error caching.",
+    "publication": "Changed representation changes ETag. Without an explicit edge purge, responses may lag publication by at most the configured60-second TTL; a stale cursor can return409 and must restart with unchanged filters."
+  }
 }
