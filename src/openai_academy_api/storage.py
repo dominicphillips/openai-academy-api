@@ -104,7 +104,9 @@ class SnapshotStore:
             state["lastSuccessAt"] = timestamp
         atomic_json(self.state_path, state)
 
-    def publish(self, artifact_path: Path, *, method: str = "manual") -> Snapshot:
+    def publish(
+        self, artifact_path: Path, *, method: str = "manual", artwork_receipts: dict | None = None
+    ) -> Snapshot:
         try:
             artifact = CollectionArtifact.model_validate_json(bounded_json(artifact_path))
             snapshot = build_snapshot(artifact, method)  # type: ignore[arg-type]
@@ -116,7 +118,12 @@ class SnapshotStore:
                     old = None
                 if old is not None:
                     snapshot = merge_snapshot(old, snapshot)
-                    payload = snapshot.model_dump(mode="json", by_alias=True)
+                if artwork_receipts is not None:
+                    from .artwork_refresh import prepare_artwork_refresh
+
+                    snapshot, _ = prepare_artwork_refresh(snapshot, artwork_receipts, previous=old)
+                payload = snapshot.model_dump(mode="json", by_alias=True)
+                if old is not None:
                     atomic_json(self.previous_path, old.model_dump(mode="json", by_alias=True))
                 atomic_json(self.path, payload)
                 self._signature = None

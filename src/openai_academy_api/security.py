@@ -7,6 +7,7 @@ import re
 from urllib.parse import unquote, urlsplit, urlunsplit
 
 ACADEMY_HOST = "academy.openai.com"
+ARTWORK_HOSTS = frozenset({"d2xo500swnpgl1.cloudfront.net"})
 SOURCE_HOSTS = frozenset({ACADEMY_HOST, "openai.com", "help.openai.com"})
 MEDIA_HOSTS = frozenset(
     {

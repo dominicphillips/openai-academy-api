@@ -118,6 +118,10 @@ def session_request(plan: Plan, instructions: str) -> dict:
                     "/workspace/tools/security.py", package.joinpath("security.py").read_bytes()
                 ),
                 inline(
+                    "/workspace/tools/course_artwork.py",
+                    package.joinpath("course_artwork.py").read_bytes(),
+                ),
+                inline(
                     "/workspace/tools/preflight.py", package.joinpath("preflight.py").read_bytes()
                 ),
             ],
@@ -647,7 +651,9 @@ class Collector:
         publish_path = directory / "publishable.json"
         atomic_json(publish_path, corrected)
         journal["review"] = notes
-        snapshot = self.store.publish(publish_path, method="managed-agent")
+        snapshot = self.store.publish(
+            publish_path, method="managed-agent", artwork_receipts=receipts
+        )
         journal.update(state="published", snapshotId=snapshot.snapshot_id, remoteMayBeRunning=False)
         self._save(directory, journal)
         # Only a published run moves its fetched URLs behind unfetched ones.

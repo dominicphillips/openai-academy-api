@@ -18,9 +18,14 @@ from pydantic import (
     model_validator,
 )
 
-from .security import MEDIA_HOSTS, checked_https_url, public_academy_url, source_url, stable_id
-
-ARTWORK_HOSTS = frozenset({"d2xo500swnpgl1.cloudfront.net"})
+from .security import (
+    ARTWORK_HOSTS,
+    MEDIA_HOSTS,
+    checked_https_url,
+    public_academy_url,
+    source_url,
+    stable_id,
+)
 
 
 def camel(value: str) -> str:

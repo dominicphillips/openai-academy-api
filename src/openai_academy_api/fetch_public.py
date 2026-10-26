@@ -15,8 +15,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 try:
+    from .course_artwork import parse_course_page
     from .security import public_academy_url
 except ImportError:  # Staged beside security.py in the hosted sandbox.
+    from course_artwork import parse_course_page
     from security import public_academy_url
 
 USER_AGENT = "AcademyMetadataBot/0.1"
@@ -119,6 +121,9 @@ class PublicFetcher:
                         raise FetchBlocked("Response exceeds size limit")
                 record["bytes"] = len(body)
                 record["sha256"] = hashlib.sha256(body).hexdigest()
+                artwork = parse_course_page(bytes(body), url)
+                if artwork is not None:
+                    record["courseArtwork"] = artwork
                 return bytes(body)
         except urllib.error.HTTPError as exc:
             record["status"] = exc.code
@@ -162,13 +167,39 @@ class PublicFetcher:
                 data = self._request(url, state)
             destination = self.cache / (hashlib.sha256(url.encode()).hexdigest() + ".body")
             destination.write_bytes(data)
-            return {
+            result = {
                 "url": url,
                 "path": str(destination),
                 "bytes": len(data),
                 "sha256": hashlib.sha256(data).hexdigest(),
                 "requests": len(state["requests"]),
             }
+            artwork = parse_course_page(data, url)
+            if artwork is not None:
+                result["courseArtwork"] = artwork
+                courses = artwork["courseLearningPath"]["courses"]
+                first = courses[0] if courses else None
+                if artwork["type"] == "LearningPath" and not artwork["bannerUrl"] and first:
+                    child_url = "https://academy.openai.com/public/courses/" + first["slug"]
+                    result["artworkDetailUrl"] = child_url
+                    result["artworkDetailFetched"] = False
+                    if parser.can_fetch(USER_AGENT, child_url):
+                        try:
+                            child_data = self._request(child_url, state)
+                            child_path = self.cache / (
+                                hashlib.sha256(child_url.encode()).hexdigest() + ".body"
+                            )
+                            child_path.write_bytes(child_data)
+                            result["artworkDetailFetched"] = True
+                        except (ValueError, OSError, urllib.error.URLError):
+                            # Optional cover enrichment must not replace a complete source fetch.
+                            receipt = state["requests"][-1]
+                            if receipt["url"] == child_url and receipt["status"] == 200:
+                                receipt["httpStatus"] = 200
+                                receipt["status"] = None  # An incomplete body is not a receipt.
+                                self._save(state)
+            result["requests"] = len(state["requests"])
+            return result
 
 
 def main() -> None:

@@ -72,6 +72,10 @@ def collect() -> None:
     acknowledge.add_argument("run_id")
     purge_cache = commands.add_parser("purge-cache")
     purge_cache.add_argument("--live", action="store_true", required=True)
+    refresh_artwork = commands.add_parser("refresh-artwork")
+    refresh_artwork.add_argument("receipts", type=Path)
+    refresh_artwork.add_argument("--output", type=Path, required=True)
+    refresh_artwork.add_argument("--artifact-output", type=Path, required=True)
     frontier = commands.add_parser("frontier")
     steps = frontier.add_subparsers(dest="step", required=True)
     bootstrap = steps.add_parser("bootstrap")
@@ -92,6 +96,39 @@ def collect() -> None:
     from .storage import SnapshotStore, bounded_json
 
     try:
+        if args.command == "refresh-artwork":
+            from .artwork_refresh import prepare_artwork_refresh
+            from .storage import atomic_json
+
+            source_paths = {args.snapshot.resolve(), args.receipts.resolve()}
+            output_paths = {args.output.resolve(), args.artifact_output.resolve()}
+            if source_paths & output_paths or len(output_paths) != 2:
+                raise ValueError("Artwork refresh outputs must be separate from the input files")
+            current = SnapshotStore(args.snapshot).read()
+            refreshed, artifact = prepare_artwork_refresh(
+                current, json.loads(bounded_json(args.receipts))
+            )
+            atomic_json(args.output, refreshed.model_dump(mode="json", by_alias=True))
+            atomic_json(args.artifact_output, artifact.model_dump(mode="json", by_alias=True))
+            old = {item.id: item.provenance.content_hash for item in current.resources}
+            print(
+                json.dumps(
+                    {
+                        "snapshotId": refreshed.snapshot_id,
+                        "previousSnapshotId": current.snapshot_id,
+                        "resources": len(refreshed.resources),
+                        "updated": [
+                            item.url
+                            for item in refreshed.resources
+                            if old[item.id] != item.provenance.content_hash
+                        ],
+                        "output": str(args.output),
+                        "artifactOutput": str(args.artifact_output),
+                    },
+                    indent=2,
+                )
+            )
+            return
         if args.command == "frontier":
             from .frontier import Frontier, simulate
 
